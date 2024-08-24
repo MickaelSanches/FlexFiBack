@@ -21,8 +21,9 @@ pool.connect()
     .catch(err => console.log(err));
 
 // Import des routes d'authentification
-const authRoutes = require('./router/auth');
-app.use('/api/auth', authRoutes);
+const router = require('./app/router.js');
+
+app.set('view engine', 'ejs');
 
 app.get('/', (req, res) => {
     res.send('API is running...');
