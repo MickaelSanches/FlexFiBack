@@ -10,14 +10,15 @@ function generateSeedPhrase() {
   return mnemonic;
 }
 
+
 // Configuration de Nodemailer
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
+  host: "smtp.zoho.eu",
   port: 587, // Utilisez 587 pour TLS
   secure: false, // false pour utiliser TLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: "contact@innovpower.io",
+    pass: "LesYeuxVersl'Avenir4870."
   }
 });
 
@@ -30,13 +31,14 @@ exports.sendVerificationEmail = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Votre code de vérification',
-      text: `Votre code de vérification est : ${verificationCode}. Ce code est valide pour 30 minutes.`
+      text: `Votre code de vérification est : ${verificationCode}. Ce code est valide pour 30 minutes.`,
     });
 
+    // Enregistrement du code dans la base de données
     await pool.query('INSERT INTO email_verification (email, code, expires_at) VALUES ($1, $2, $3)', [
       email,
       verificationCode,
-      new Date(Date.now() + 30 * 60000) // 30 minutes de validité
+      new Date(Date.now() + 30 * 60000), // 30 minutes de validité
     ]);
 
     res.json({ message: 'Code de vérification envoyé.' });
@@ -46,15 +48,22 @@ exports.sendVerificationEmail = async (req, res) => {
   }
 };
 
+
+
 exports.verifyEmail = async (req, res) => {
   const { email, code } = req.body;
 
+  console.log('Email:', email);
+  console.log('Code reçu:', code);
+
   try {
-    const result = await pool.query('SELECT * FROM email_verification WHERE email = $1 AND code = $2 AND expires_at > NOW()', [email, code]);
+    const result = await pool.query('SELECT * FROM public.email_verification WHERE email = $1 AND code = $2 AND expires_at > NOW()', [email, code]);
 
     if (result.rows.length > 0) {
+      console.log('Vérification réussie:', result.rows[0]);
       res.json({ message: 'Email vérifié avec succès.' });
     } else {
+      console.log('Code invalide ou expiré pour:', email);
       res.status(400).json({ error: 'Code de vérification invalide ou expiré.' });
     }
   } catch (error) {

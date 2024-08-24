@@ -1,6 +1,8 @@
 const express = require('express');
+const cors = require('cors');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
+const router = require('./router/router');
 
 dotenv.config();
 
@@ -20,8 +22,14 @@ pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch(err => console.log(err));
 
-// Import des routes d'authentification
-const router = require('./app/router.js');
+console.log('Database Name:', process.env.DB_NAME);
+console.log('Database Name:', process.env.DB_PASS);
+console.log('Database Name:', process.env.DB_USER);
+
+
+app.use(cors({ origin: 'http://localhost:3001' }));
+
+app.use('/', router)
 
 app.set('view engine', 'ejs');
 
