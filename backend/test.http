@@ -1,0 +1,36 @@
+### Envoi du code de vérification par email
+POST http://localhost:3000/api/auth/send-verification-email
+Content-Type: application/json
+
+{
+  "email": "mickael.4870@gmail.com"
+}
+
+### Vérification du code de l'email
+POST http://localhost:3000/api/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "mickael.4870@gmail.com",
+  "code": "808404"
+}
+
+
+### Création du mot de passe après vérification de l'email
+POST http://localhost:3000/api/auth/set-password
+Content-Type: application/json
+
+{
+  "email": "mickael.4870@gmail.com",
+  "password": "VotreMotDePasseSecurise123"
+}
+
+### Connexion de l'utilisateur
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mickael.4870@gmail.com",
+  "password": "VotreMotDePasseSecurise123"
+}
+
