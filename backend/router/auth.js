@@ -109,6 +109,63 @@ router.post('/set-password', async (req, res) => {
     }
 });
 
+// Route pour envoyer le mail de confirmation
+router.post('/send-confirmation-email', async (req, res) => {
+    const { email } = req.body;
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // Code à 6 chiffres
+
+    try {
+        // Envoi de l'email de confirmation
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Confirmation de votre inscription',
+            text: `Merci de vous être inscrit. Voici votre code de confirmation : ${verificationCode}.`
+        });
+
+        res.json({ message: 'Email de confirmation envoyé.' });
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
+        res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'email de confirmation.' });
+    }
+});
+
+// Route pour enregistrer l'utilisateur en base de données
+router.post('/register', async (req, res) => {
+    const { email, password } = req.body;
+
+    // Vérification de la complexité du mot de passe
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,128}$/;
+    if (!passwordRegex.test(password)) {
+        return res.status(400).json({
+            error: 'Le mot de passe doit contenir entre 8 et 128 caractères, inclure au moins un chiffre et une lettre majuscule.'
+        });
+    }
+
+    try {
+        // Vérifier si l'utilisateur existe déjà
+        const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
+
+        const seedPhrase = generateSeedPhrase(); // Générer la seed phrase
+        const hashedPassword = await bcrypt.hash(password, 10); // Hacher le mot de passe
+
+        // Enregistrer l'utilisateur
+        const newUser = await pool.query(
+            'INSERT INTO users (email, password, seed_phrase) VALUES ($1, $2, $3) RETURNING *',
+            [email, hashedPassword, seedPhrase]
+        );
+
+        res.json({ message: 'Utilisateur enregistré avec succès.', user: newUser.rows[0] });
+
+    } catch (error) {
+        console.error('Erreur lors de l\'enregistrement de l\'utilisateur:', error);
+        res.status(500).json({ error: 'Erreur lors de l\'enregistrement de l\'utilisateur.' });
+    }
+});
+
 // Connexion - Étape 4
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;

@@ -1,13 +1,21 @@
 const express = require('express');
+const { Pool } = require('pg');
 const dotenv = require('dotenv');
-const pool = require('./db.js');
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-// Vérifier la connexion à PostgreSQL
+// Connexion à PostgreSQL
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASS,
+    port: process.env.DB_PORT,
+});
+
 pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch(err => console.log(err));
