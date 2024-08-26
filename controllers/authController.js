@@ -5,7 +5,10 @@ exports.register = async (req, res) => {
 
   try {
     const user = await userService.registerUser(email, password);
-    res.json({ message: 'User successfully registered.', user });
+    res.json({
+      message: 'User successfully registered.',
+      seed_phrase: user.seed_phrase
+    });
   } catch (error) {
     console.error('Error registering user:', error.message);
     res.status(400).json({ error: error.message });
@@ -71,13 +74,14 @@ exports.getSeedPhrase = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const result = await userService.getSeedPhrase(email, password)
-    return result
-  } catch {
-    console.error('Error setting password:', error.message);
+    const seedPhrase = await userService.getSeedPhrase(email, password);
+    res.json({ seed_phrase: seedPhrase });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la seed phrase:', error.message);
     res.status(400).json({ error: error.message });
   }
-}
+};
+
 
 exports.sendConfirmationEmail = async (req, res) => {
   const { email } = req.body;
