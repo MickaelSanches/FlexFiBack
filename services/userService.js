@@ -81,6 +81,28 @@ class UserService {
     return userMapper.createUser(email, hashedPassword, seedPhrase);
   }
 
+  async registerProfessional(email, password, businessInfo) {
+    const emailExists = await this.checkUserExists(email);
+    if (emailExists) {
+        throw new Error('User already exists');
+    }
+
+    if (!this.validatePassword(password)) {
+        throw new Error('Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter.');
+    }
+
+    const seedPhrase = this.generateSeedPhrase();
+    const hashedPassword = await this.hashPassword(password);
+    
+    // Crée l'utilisateur professionnel et récupère son ID
+    const user = await userMapper.createUser(email, hashedPassword, seedPhrase, 'pending');
+
+    // Insère les informations professionnelles dans la table business_info
+    await userMapper.insertBusinessInfo(user.id, businessInfo);
+
+    return user;
+}
+
   async loginUser(email, password) {
     const user = await userMapper.findUserByEmail(email);
     if (!user || !(await this.comparePassword(password, user.password))) {

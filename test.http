@@ -34,3 +34,11 @@ Content-Type: application/json
   "password": "VotreMotDePasseSecurise123"
 }
 
+### Recherche SIREN
+POST http://localhost:3000/validate-business-info
+Content-Type: application/json
+
+{
+  "sirenOrSiret": "930735865"
+}
+

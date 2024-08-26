@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const proController = require('../controllers/proController');
 
 // Inscription - Étape 1 : Envoi du code de vérification par email
 router.post('/send-verification-email', authController.sendVerificationEmail);
@@ -19,5 +20,11 @@ router.post('/register', authController.register);
 
 // Connexion - Étape 4
 router.post('/login', authController.login);
+
+// Route pour valider les informations professionnelles via l'API INSEE
+router.post('/validate-business-info', proController.validateBusinessInfo);
+
+// Route pour générer la seed phrase après validation
+router.post('/generate-seed', proController.generateSeed);
 
 module.exports = router;

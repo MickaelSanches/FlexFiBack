@@ -13,3 +13,14 @@ CREATE TABLE email_verification (
     code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
+
+CREATE TABLE business_info (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    siren VARCHAR(20) UNIQUE NOT NULL,
+    categorie_juridique VARCHAR(100),
+    activite_principale VARCHAR(100),
+    denomination VARCHAR(255),
+    date_creation DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

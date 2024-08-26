@@ -14,6 +14,15 @@ class UserMapper {
     return result.rows[0];
   }
 
+  async insertBusinessInfo(userId, businessInfo) {
+    const { siren, categorie_juridique, activite_principale, denomination, date_creation } = businessInfo;
+    await db.query(
+        `INSERT INTO business_info (user_id, siren, categorie_juridique, activite_principale, denomination, date_creation) 
+        VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, siren, categorie_juridique, activite_principale, denomination, date_creation]
+    );
+}
+
   async insertVerificationCode(email, code, expiresAt) {
     await pool.query('INSERT INTO email_verification (email, code, expires_at) VALUES ($1, $2, $3)', [
       email,
