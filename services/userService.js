@@ -9,6 +9,21 @@ class UserService {
     return bip39.generateMnemonic();
   }
 
+  async getSeedPhrase(email, password) {
+    const user = await userMapper.findUserByEmail(email);
+
+    if (!user) {
+      throw new Error('Utilisateur non trouvé');
+    }
+
+    const isPasswordValid = await this.comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error('Mot de passe incorrect');
+    }
+
+    return user.seed_phrase;
+  }
+
   validatePassword(password) {
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,128}$/;
     return passwordRegex.test(password);

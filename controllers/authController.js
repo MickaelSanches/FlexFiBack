@@ -67,6 +67,18 @@ exports.setPassword = async (req, res) => {
   }
 };
 
+exports.getSeedPhrase = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const result = await userService.getSeedPhrase(email, password)
+    return result
+  } catch {
+    console.error('Error setting password:', error.message);
+    res.status(400).json({ error: error.message });
+  }
+}
+
 exports.sendConfirmationEmail = async (req, res) => {
   const { email } = req.body;
 

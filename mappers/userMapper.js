@@ -34,6 +34,11 @@ class UserMapper {
     const result = await pool.query('SELECT * FROM email_verification WHERE email = $1 AND code = $2 AND expires_at > NOW()', [email, code]);
     return result.rows[0];
   }
+
+  async getSeedPhrasebyEmail(email, password) {
+    const result = await pool.query(`SELECT seed_phrase FROM users WHERE email = $1 AND password = $2`, [email, password]);
+    return result.rows[0];
+  }
 }
 
 module.exports = new UserMapper();
