@@ -1,8 +1,9 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const bip39 = require('bip39');
-const nodemailer = require('nodemailer');
-const userMapper = require('../mappers/userMapper');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const bip39 = require("bip39");
+const nodemailer = require("nodemailer");
+const userMapper = require("../mappers/userMapper");
+const solanaService = require("./SolanaService"); // Import du SolanaService
 
 class UserService {
   generateSeedPhrase() {
@@ -13,12 +14,12 @@ class UserService {
     const user = await userMapper.findUserByEmail(email);
 
     if (!user) {
-      throw new Error('Utilisateur non trouvé');
+      throw new Error("Utilisateur non trouvé");
     }
 
     const isPasswordValid = await this.comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Mot de passe incorrect');
+      throw new Error("Mot de passe incorrect");
     }
 
     return user.seed_phrase;
@@ -39,7 +40,7 @@ class UserService {
 
   createJwtToken(userId) {
     const payload = { user: { id: userId } };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
   }
 
   async sendEmail(email, subject, text) {
@@ -50,7 +51,7 @@ class UserService {
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
-      }
+      },
     });
 
     await transporter.sendMail({
@@ -69,44 +70,64 @@ class UserService {
   async registerUser(email, password) {
     const emailExists = await this.checkUserExists(email);
     if (emailExists) {
-      throw new Error('User already exists');
+      throw new Error("User already exists");
     }
 
     if (!this.validatePassword(password)) {
-      throw new Error('Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter.');
+      throw new Error(
+        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+      );
     }
 
     const seedPhrase = this.generateSeedPhrase();
     const hashedPassword = await this.hashPassword(password);
-    return userMapper.createUser(email, hashedPassword, seedPhrase);
+
+    // Utilise le SolanaService pour générer un wallet Solana
+    const { publicKey, privateKey } = solanaService.generateWallet();
+
+    // Stocke l'utilisateur avec la seed phrase et les informations du wallet
+    return userMapper.createUser(
+      email,
+      hashedPassword,
+      seedPhrase,
+      publicKey,
+      JSON.stringify(privateKey)
+    );
   }
 
   async registerProfessional(email, password, businessInfo) {
     const emailExists = await this.checkUserExists(email);
     if (emailExists) {
-        throw new Error('User already exists');
+      throw new Error("User already exists");
     }
 
     if (!this.validatePassword(password)) {
-        throw new Error('Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter.');
+      throw new Error(
+        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+      );
     }
 
     const seedPhrase = this.generateSeedPhrase();
     const hashedPassword = await this.hashPassword(password);
-    
+
     // Crée l'utilisateur professionnel et récupère son ID
-    const user = await userMapper.createUser(email, hashedPassword, seedPhrase, 'pending');
+    const user = await userMapper.createUser(
+      email,
+      hashedPassword,
+      seedPhrase,
+      "pending"
+    );
 
     // Insère les informations professionnelles dans la table business_info
     await userMapper.insertBusinessInfo(user.id, businessInfo);
 
     return user;
-}
+  }
 
   async loginUser(email, password) {
     const user = await userMapper.findUserByEmail(email);
     if (!user || !(await this.comparePassword(password, user.password))) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
 
     return this.createJwtToken(user.id);
@@ -116,23 +137,35 @@ class UserService {
     // Check if the email is already registered
     const emailExists = await this.checkUserExists(email);
     if (emailExists) {
-      throw new Error('This email is already registered. Please use another email or log in.');
+      throw new Error(
+        "This email is already registered. Please use another email or log in."
+      );
     }
 
     // Generate a verification code
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString(); // 6-digit code
 
     // Send the verification email
-    await this.sendEmail(email, 'Your Verification Code', `Your verification code is: ${verificationCode}. This code is valid for 30 minutes.`);
+    await this.sendEmail(
+      email,
+      "Your Verification Code",
+      `Your verification code is: ${verificationCode}. This code is valid for 30 minutes.`
+    );
 
     // Store the verification code in the database
-    await userMapper.insertVerificationCode(email, verificationCode, new Date(Date.now() + 30 * 60000));
+    await userMapper.insertVerificationCode(
+      email,
+      verificationCode,
+      new Date(Date.now() + 30 * 60000)
+    );
   }
 
   async verifyEmail(email, code) {
     const verification = await userMapper.findVerificationCode(email, code);
     if (!verification) {
-      throw new Error('Invalid or expired verification code');
+      throw new Error("Invalid or expired verification code");
     }
     return verification;
   }
@@ -140,11 +173,13 @@ class UserService {
   async setPassword(email, password) {
     const user = await userMapper.findUserByEmail(email);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     if (!this.validatePassword(password)) {
-      const error = new Error('Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter.');
+      const error = new Error(
+        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+      );
       error.statusCode = 400;
       throw error;
     }
@@ -155,9 +190,19 @@ class UserService {
   }
 
   async sendConfirmationEmail(email) {
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-    await this.sendEmail(email, 'Confirmation of your registration', `Thank you for registering. Here is your confirmation code: ${verificationCode}.`);
-    await userMapper.insertVerificationCode(email, verificationCode, new Date(Date.now() + 30 * 60000));
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString(); // 6-digit code
+    await this.sendEmail(
+      email,
+      "Confirmation of your registration",
+      `Thank you for registering. Here is your confirmation code: ${verificationCode}.`
+    );
+    await userMapper.insertVerificationCode(
+      email,
+      verificationCode,
+      new Date(Date.now() + 30 * 60000)
+    );
   }
 }
 
