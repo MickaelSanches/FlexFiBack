@@ -1,0 +1,498 @@
+{
+  "version": "0.1.0",
+  "name": "flexfi",
+  "instructions": [
+    {
+      "name": "createWallet",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "depositSol",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "getWalletBalance",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "asset",
+          "type": "string"
+        }
+      ],
+      "returns": "u64"
+    },
+    {
+      "name": "directPayment",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "asset",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "paymentViaBuyerId",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "buyerId",
+          "type": "bytes"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "asset",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "paymentViaQr",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipientWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "qrData",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "asset",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "swap",
+      "accounts": [
+        {
+          "name": "userWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "oracle",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "fromAsset",
+          "type": "string"
+        },
+        {
+          "name": "toAsset",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ],
+      "returns": "u64"
+    },
+    {
+      "name": "updateConversionRate",
+      "accounts": [
+        {
+          "name": "oracle",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "fromAsset",
+          "type": "string"
+        },
+        {
+          "name": "toAsset",
+          "type": "string"
+        },
+        {
+          "name": "rate",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "requestInstallmentPayment",
+      "accounts": [
+        {
+          "name": "installmentPayment",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "installments",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "logTransaction",
+      "accounts": [
+        {
+          "name": "transaction",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "UserWallet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "walletId",
+            "type": "bytes"
+          },
+          {
+            "name": "balanceUsd",
+            "type": "u64"
+          },
+          {
+            "name": "balanceEur",
+            "type": "u64"
+          },
+          {
+            "name": "balanceSol",
+            "type": "u64"
+          },
+          {
+            "name": "balanceBtc",
+            "type": "u64"
+          },
+          {
+            "name": "balanceUsdc",
+            "type": "u64"
+          },
+          {
+            "name": "balanceEurcv",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstallmentPayment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "installments",
+            "type": "u8"
+          },
+          {
+            "name": "remainingInstallments",
+            "type": "u8"
+          },
+          {
+            "name": "totalPaid",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Transaction",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Oracle",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "usdToBtcRate",
+            "type": "u64"
+          },
+          {
+            "name": "btcToUsdRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdToEurRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurToUsdRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdToSolRate",
+            "type": "u64"
+          },
+          {
+            "name": "solToUsdRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdToUsdcRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdcToUsdRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdToEurcvRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurcvToUsdRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurToBtcRate",
+            "type": "u64"
+          },
+          {
+            "name": "btcToEurRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurToSolRate",
+            "type": "u64"
+          },
+          {
+            "name": "solToEurRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurToUsdcRate",
+            "type": "u64"
+          },
+          {
+            "name": "usdcToEurRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurToEurcvRate",
+            "type": "u64"
+          },
+          {
+            "name": "eurcvToEurRate",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidSeedPhrase",
+      "msg": "Invalid Seed Phrase."
+    },
+    {
+      "code": 6001,
+      "name": "InvalidPassword",
+      "msg": "Invalid Password."
+    },
+    {
+      "code": 6002,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient Funds."
+    },
+    {
+      "code": 6003,
+      "name": "InvalidConversion",
+      "msg": "Invalid Conversion."
+    },
+    {
+      "code": 6004,
+      "name": "InvalidAsset",
+      "msg": "Invalid Asset."
+    }
+  ]
+}

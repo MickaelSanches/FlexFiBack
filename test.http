@@ -42,3 +42,30 @@ Content-Type: application/json
   "sirenOrSiret": "930735865"
 }
 
+### Déposer 1 SOL dans le wallet de l'expéditeur
+POST http://localhost:3000/deposit-sol
+Content-Type: application/json
+
+{
+  "senderPrivateKey": [100,160,182,47,192,123,145,219,141,153,203,24,179,127,131,194,96,241,0,93,28,245,190,218,179,243,194,34,154,27,139,81,142,236,66,48,201,127,186,42,203,233,84,39,41,93,218,147,140,50,132,244,21,210,19,93,132,122,243,248,21,15,230,7],
+  "amount": 1
+}
+
+
+### Envoyer 0.5 SOL de l'expéditeur au destinataire
+POST http://localhost:3000/send-transaction
+Content-Type: application/json
+
+{
+  "senderPrivateKey": [100,160,182,47,192,123,145,219,141,153,203,24,179,127,131,194,96,241,0,93,28,245,190,218,179,243,194,34,154,27,139,81,142,236,66,48,201,127,186,42,203,233,84,39,41,93,218,147,140,50,132,244,21,210,19,93,132,122,243,248,21,15,230,7],
+  "recipientPublicKey": "9RtuxivNgLVeoqh3wCrzkfHPcMBJti7eseDXRAy1dqnx",
+  "amount": 0.5,
+  "asset": "SOL"
+}
+
+
+### Vérifier le solde de l'expéditeur dans le programme
+GET http://localhost:3000/transaction-history/AcuqoHzz98rVus916ZZxJvuKZGcR5DeWEmpv4So64Svz
+
+### Vérifier le solde du destinataire dans le programme
+GET http://localhost:3000/transaction-history/9RtuxivNgLVeoqh3wCrzkfHPcMBJti7eseDXRAy1dqnx
