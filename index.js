@@ -1,8 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
-const router = require('./router/router');
+const express = require("express");
+const cors = require("cors");
+const { Pool } = require("pg");
+const dotenv = require("dotenv");
+// const router = require("./router/router");
+const authRoutes = require("./router/authRoutes");
+const proRoutes = require("./router/proRoutes");
+const solanaRoutes = require("./router/solanaRoutes");
 
 dotenv.config();
 
@@ -11,30 +14,37 @@ app.use(express.json());
 
 // Connexion à PostgreSQL
 const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
-    port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: process.env.DB_PORT,
 });
 
-pool.connect()
-    .then(() => console.log('Connected to PostgreSQL'))
-    .catch(err => console.log(err));
+pool
+  .connect()
+  .then(() => console.log("Connected to PostgreSQL"))
+  .catch((err) => console.log(err));
 
-console.log('Database Name:', process.env.DB_NAME);
-console.log('Database Name:', process.env.DB_PASS);
-console.log('Database Name:', process.env.DB_USER);
+console.log("Database Name:", process.env.DB_NAME);
+console.log("Database Name:", process.env.DB_PASS);
+console.log("Database Name:", process.env.DB_USER);
 
+app.use(cors({ origin: "http://localhost:3001" }));
 
-app.use(cors({ origin: 'http://localhost:3001' }));
+// Routes pour l'authentification
+app.use("/auth", authRoutes);
 
-app.use('/', router)
+// Routes pour les informations professionnelles
+app.use("/pro", proRoutes);
 
-app.set('view engine', 'ejs');
+// Routes pour les transactions Solana
+app.use("/solana", solanaRoutes);
 
-app.get('/', (req, res) => {
-    res.send('API is running...');
+app.set("view engine", "ejs");
+
+app.get("/", (req, res) => {
+  res.send("API is running...");
 });
 
 const PORT = process.env.PORT || 3000;

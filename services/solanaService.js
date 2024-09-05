@@ -10,56 +10,113 @@ class SolanaService {
     return { publicKey, privateKey };
   }
 
-  // Méthode pour envoyer une transaction Solana
+  // Méthode pour envoyer une transaction Solana (paiement direct)
   async sendTransaction(senderPrivateKey, recipientPublicKey, amount) {
     try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
-      
-      // Convertir la clé privée de l'expéditeur en Keypair
-      const senderWallet = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(senderPrivateKey));
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
+      const senderWallet = solanaWeb3.Keypair.fromSecretKey(
+        Uint8Array.from(senderPrivateKey)
+      );
 
-      // Construire la transaction
       const transaction = new solanaWeb3.Transaction().add(
         solanaWeb3.SystemProgram.transfer({
           fromPubkey: senderWallet.publicKey,
           toPubkey: new solanaWeb3.PublicKey(recipientPublicKey),
-          lamports: solanaWeb3.LAMPORTS_PER_SOL * amount,  // Conversion de SOL en lamports
+          lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
         })
       );
 
-      // Envoyer et confirmer la transaction
-      const signature = await solanaWeb3.sendAndConfirmTransaction(connection, transaction, [senderWallet]);
-      console.log('Transaction réussie avec signature:', signature);
+      const signature = await solanaWeb3.sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [senderWallet]
+      );
+      console.log("Transaction réussie avec signature:", signature);
       return signature;
-
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de la transaction:', error);
-      throw new Error('La transaction a échoué');
+      console.error("Erreur lors de l'envoi de la transaction:", error);
+      throw new Error("La transaction a échoué");
+    }
+  }
+
+  // Méthode pour effectuer un dépôt de SOL
+  async depositSol(senderPrivateKey, amount) {
+    try {
+      const recipientPublicKey = "TonAdresseDeDépôtPublic"; // Adresse de dépôt fixe ou configurable
+      return await this.sendTransaction(
+        senderPrivateKey,
+        recipientPublicKey,
+        amount
+      );
+    } catch (error) {
+      console.error("Erreur dans depositSol:", error);
+      throw new Error("Erreur lors du dépôt de SOL");
+    }
+  }
+
+  // Méthode pour envoyer un paiement via un smart contract
+  async directPayment(senderPrivateKey, recipientPublicKey, amount, asset) {
+    // Si le paiement est du SOL, utilise sendTransaction, sinon gère des assets différents
+    if (asset === "SOL") {
+      return await this.sendTransaction(
+        senderPrivateKey,
+        recipientPublicKey,
+        amount
+      );
+    } else {
+      // Gérer des paiements d'autres actifs ici
+      throw new Error("Asset non supporté");
     }
   }
 
   // Méthode pour récupérer l'historique des transactions
   async getTransactionHistory(publicKey) {
     try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('testnet'), 'confirmed');
-      
-      // Utiliser getSignaturesForAddress à la place
-      const signatures = await connection.getSignaturesForAddress(new solanaWeb3.PublicKey(publicKey));
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("testnet"),
+        "confirmed"
+      );
+      const signatures = await connection.getSignaturesForAddress(
+        new solanaWeb3.PublicKey(publicKey)
+      );
       const transactions = [];
-  
+
       for (const signatureInfo of signatures) {
-        const transaction = await connection.getConfirmedTransaction(signatureInfo.signature);
+        const transaction = await connection.getConfirmedTransaction(
+          signatureInfo.signature
+        );
         transactions.push(transaction);
       }
-  
+
       return transactions;
-  
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'historique des transactions:', error);
-      throw new Error('Impossible de récupérer l\'historique des transactions');
+      console.error(
+        "Erreur lors de la récupération de l'historique des transactions:",
+        error
+      );
+      throw new Error("Impossible de récupérer l'historique des transactions");
+    }
+  }
+
+  // Méthode pour récupérer le solde du wallet
+  async getWalletBalance(publicKey, asset) {
+    try {
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
+      const balance = await connection.getBalance(
+        new solanaWeb3.PublicKey(publicKey)
+      );
+      return balance / solanaWeb3.LAMPORTS_PER_SOL; // Conversion de lamports en SOL
+    } catch (error) {
+      console.error("Erreur dans getWalletBalance:", error);
+      throw new Error("Erreur lors de la récupération du solde");
     }
   }
 }
 
 module.exports = new SolanaService();
-
