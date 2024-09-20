@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bip39 = require("bip39");
 const nodemailer = require("nodemailer");
 const userMapper = require("../mappers/userMapper");
-const solanaService = require("./SolanaService"); // Import du SolanaService
+const solanaService = require("./solanaService");
 
 class UserService {
   generateSeedPhrase() {

@@ -17,8 +17,12 @@ class SolanaController {
   }
 
   async directPayment(req, res) {
-    const { senderPrivateKey, recipientPublicKey, amount, asset } = req.body;
+    const { senderPrivateKey, senderPublicKey, recipientPublicKey, amount, asset } = req.body;
+
     try {
+      // Enregistrer le wallet sur la blockchain lors de la première transaction
+      await solanaService.registerWalletOnChain(senderPublicKey, senderPrivateKey);
+
       const result = await solanaService.directPayment(
         senderPrivateKey,
         recipientPublicKey,

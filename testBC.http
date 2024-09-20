@@ -1,0 +1,72 @@
+### Envoi du code de vérification par email
+POST http://localhost:3000/auth/send-verification-email
+Content-Type: application/json
+
+{
+  "email": "moncomptoirsecret@gmail.com"
+}
+
+### Vérification du code de l'email
+POST http://localhost:3000/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "moncomptoirsecret@gmail.com",
+  "code": "957489"
+}
+
+
+### Création du mot de passe après vérification de l'email
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "moncomptoirsecret@gmail.com",
+  "password": "Password123"
+}
+
+### Connexion de l'utilisateur
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "mickael.4870@gmail.com",
+  "password": "Password123"
+}
+
+### Recherche SIREN
+POST http://localhost:3000/validate-business-info
+Content-Type: application/json
+
+{
+  "sirenOrSiret": "930735865"
+}
+
+### Déposer 1 SOL dans le wallet de l'expéditeur
+POST http://localhost:3000/deposit-sol
+Content-Type: application/json
+
+{
+  "senderPrivateKey": [100,160,182,47,192,123,145,219,141,153,203,24,179,127,131,194,96,241,0,93,28,245,190,218,179,243,194,34,154,27,139,81,142,236,66,48,201,127,186,42,203,233,84,39,41,93,218,147,140,50,132,244,21,210,19,93,132,122,243,248,21,15,230,7],
+  "amount": 1
+}
+
+
+### Envoyer 0.5 SOL de l'expéditeur au destinataire
+POST http://localhost:3000/solana/directPayment
+Content-Type: application/json
+
+{
+  "senderPrivateKey": [36,226,94,154,121,12,39,121,167,228,164,172,179,96,137,174,252,219,217,32,226,20,199,213,38,93,15,7,139,8,243,124,120,202,15,217,124,39,253,216,176,121,67,22,223,63,109,87,173,5,184,117,111,238,218,148,125,181,232,65,51,153,150,72],
+  "senderPublicKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
+  "recipientPublicKey": "9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E",
+  "amount": 0.1,
+  "asset": "SOL"
+}
+
+
+### Vérifier le solde de l'expéditeur dans le programme
+GET http://localhost:3000/transaction-history/AcuqoHzz98rVus916ZZxJvuKZGcR5DeWEmpv4So64Svz
+
+### Vérifier le solde du destinataire dans le programme
+GET http://localhost:3000/transaction-history/9RtuxivNgLVeoqh3wCrzkfHPcMBJti7eseDXRAy1dqnx

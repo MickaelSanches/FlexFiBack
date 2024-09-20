@@ -1,15 +1,17 @@
 const userService = require("../services/userService");
+const solanaService = require("../services/solanaService");
 
 exports.register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Générer un utilisateur et un wallet, mais ne pas l'enregistrer sur la blockchain
     const user = await userService.registerUser(email, password);
 
     res.json({
       message: "User successfully registered.",
       seed_phrase: user.seed_phrase,
-      public_key: user.public_key, // Ajouter l'adresse publique du wallet ici
+      public_key: user.public_key // Clé publique du wallet
     });
   } catch (error) {
     console.error("Error registering user:", error.message);
