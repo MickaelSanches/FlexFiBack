@@ -1,0 +1,8 @@
+### Connexion de l'utilisateur
+POST http://localhost:3000/bnpl/simulate
+Content-Type: application/json
+
+{
+    "amount": 1000,
+    "months": 6
+}
