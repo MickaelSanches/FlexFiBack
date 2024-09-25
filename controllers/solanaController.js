@@ -2,6 +2,20 @@ const solanaWeb3 = require('@solana/web3.js');
 const solanaService = require("../services/solanaService");
 
 class SolanaController {
+  
+  async createFlexFiWallet(req, res) {
+    try {
+      const result = await solanaService.createFlexFiWallet();
+      res.status(200).send({
+        message: "Wallet FlexFi créé avec succès",
+        publicKey: result.publicKey,
+      });
+    } catch (error) {
+      console.error("Erreur lors de la création du wallet FlexFi:", error);
+      res.status(500).send({ error: "Échec de la création du wallet FlexFi" });
+    }
+  }
+
   async depositSol(req, res) {
     const { senderPrivateKey, amount } = req.body;
     try {

@@ -1,0 +1,3 @@
+### Créer le wallet FlexFi
+POST http://localhost:3000/solana/create-flexfi-wallet
+Content-Type: application/json

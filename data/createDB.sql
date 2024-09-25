@@ -38,3 +38,14 @@ CREATE TABLE business_info (
     date_creation DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Création de la table 'flexfi' pour suivre les encaissements et la balance de l'entreprise --
+CREATE TABLE flexfi (
+    id SERIAL PRIMARY KEY,
+    public_key VARCHAR(255) NOT NULL,
+    private_key TEXT NOT NULL,
+    total_received DECIMAL(18, 9) DEFAULT 0, -- Stocker les fonds reçus via les frais
+    total_fees DECIMAL(18, 9) DEFAULT 0, -- Stocker le total des frais encaissés
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

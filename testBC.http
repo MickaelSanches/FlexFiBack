@@ -59,4 +59,4 @@ Content-Type: application/json
 GET http://localhost:3000/solana/transaction-history/9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E
 
 ### Vérifier le solde
-GET http://localhost:3000/solana/get-wallet-balance/98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7
+GET http://localhost:3000/solana/get-wallet-balance/14EVxaExmmojAZ7PbE6pyC6zPBDt38uwbfKvf2Sxinap

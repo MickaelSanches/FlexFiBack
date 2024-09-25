@@ -1,5 +1,6 @@
 const solanaWeb3 = require("@solana/web3.js");
 const anchor = require("@project-serum/anchor");
+const db = require('../db');
 
 class SolanaService {
   // Méthode pour générer un nouveau wallet Solana
@@ -9,6 +10,32 @@ class SolanaService {
     const privateKey = Array.from(newWallet.secretKey);
 
     return { publicKey, privateKey };
+  }
+
+  // Méthode pour créer et enregistrer le wallet FlexFi
+  async createFlexFiWallet() {
+    try {
+      // Générer le wallet FlexFi
+      const { publicKey, privateKey } = this.generateWallet();
+
+      // Enregistrement du wallet FlexFi dans la base de données
+      await db.query(`
+        INSERT INTO flexfi (public_key, private_key) 
+        VALUES ($1, $2)
+      `, [publicKey, privateKey]);
+
+      // Approvisionner le wallet en SOL
+      await this.airdropSol(publicKey);
+
+      // Enregistrer le wallet sur la blockchain
+      await this.registerWalletOnChain(publicKey, privateKey);
+
+      console.log("Wallet FlexFi créé et enregistré sur la blockchain");
+      return { publicKey, privateKey };
+    } catch (error) {
+      console.error("Erreur lors de la création du wallet FlexFi :", error);
+      throw new Error("Erreur lors de la création du wallet FlexFi");
+    }
   }
 
   // Ajout de la méthode airdropSol pour créditer un wallet en SOL
@@ -76,7 +103,6 @@ async registerWalletOnChain(publicKey, privateKey) {
   }
 }
 
-
   // Méthode pour envoyer une transaction Solana (paiement direct)
   async sendTransaction(senderPrivateKey, recipientPublicKey, amount) {
     try {
@@ -87,20 +113,49 @@ async registerWalletOnChain(publicKey, privateKey) {
       const senderWallet = solanaWeb3.Keypair.fromSecretKey(
         Uint8Array.from(senderPrivateKey)
       );
-
-      const transaction = new solanaWeb3.Transaction().add(
-        solanaWeb3.SystemProgram.transfer({
-          fromPubkey: senderWallet.publicKey,
-          toPubkey: new solanaWeb3.PublicKey(recipientPublicKey),
-          lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
-        })
-      );
-
+  
+      // Récupérer la clé publique de FlexFi en base de données
+      const flexFiWallet = await db.query("SELECT public_key FROM flexfi LIMIT 1");
+      const flexFiPublicKey = flexFiWallet.rows[0].public_key;
+  
+      // Calcul des frais de 1% et du montant net à envoyer
+      const fees = amount * 0.01;
+      const netAmount = amount - fees;
+  
+      // Transaction : envoi de l'argent au destinataire
+      const transaction = new solanaWeb3.Transaction()
+        .add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey: senderWallet.publicKey,
+            toPubkey: new solanaWeb3.PublicKey(recipientPublicKey),
+            lamports: solanaWeb3.LAMPORTS_PER_SOL * netAmount,
+          })
+        )
+        // Transaction : envoi des frais à FlexFi
+        .add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey: senderWallet.publicKey,
+            toPubkey: new solanaWeb3.PublicKey(flexFiPublicKey),
+            lamports: solanaWeb3.LAMPORTS_PER_SOL * fees,
+          })
+        );
+  
+      // Signer et envoyer la transaction
       const signature = await solanaWeb3.sendAndConfirmTransaction(
         connection,
         transaction,
         [senderWallet]
       );
+  
+      // Mettre à jour le total des frais encaissés pour FlexFi
+      await db.query(`
+        UPDATE flexfi
+        SET total_received = total_received + $1,
+            total_fees = total_fees + $2,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE public_key = $3
+      `, [amount, fees, flexFiPublicKey]);
+  
       console.log("Transaction réussie avec signature:", signature);
       return signature;
     } catch (error) {
