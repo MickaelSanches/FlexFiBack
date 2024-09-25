@@ -1,4 +1,4 @@
-// solanaController.js
+const solanaWeb3 = require('@solana/web3.js');
 const solanaService = require("../services/solanaService");
 
 class SolanaController {
@@ -48,6 +48,24 @@ class SolanaController {
     } catch (error) {
       console.error("Erreur lors de la récupération du solde :", error.message);
       res.status(400).json({ error: error.message });
+    }
+  }
+
+  // Récupérer l'historique des transactions pour une adresse donnée
+  async getTransactionHistory(req, res) {
+    const { publicKey } = req.params;
+    
+    try {
+      // Assurez-vous que publicKey est une chaîne de caractères
+      const publicKeyString = String(publicKey);
+
+      console.log(`Récupération des signatures pour l'adresse : ${publicKeyString}`);
+
+      const transactions = await solanaService.getTransactionHistory(publicKeyString);
+      res.json({ transactions });
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'historique des transactions :", error);
+      res.status(500).json({ error: "Impossible de récupérer l'historique des transactions" });
     }
   }
 }

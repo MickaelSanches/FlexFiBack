@@ -11,4 +11,7 @@ router.post("/directPayment", solanaController.directPayment);
 // Route pour récupérer le solde du wallet
 router.get("/get-wallet-balance/:publicKey", solanaController.getWalletBalance);
 
+// Route pour récupérer le solde du wallet
+router.get("/transaction-history/:publicKey", solanaController.getTransactionHistory);
+
 module.exports = router;

@@ -31,43 +31,50 @@ class SolanaService {
     }
   }
 
-  // Méthode pour enregistrer un wallet sur la blockchain lors de la première transaction
-  async registerWalletOnChain(publicKey, privateKey) {
-    try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
+// Méthode pour enregistrer un wallet sur la blockchain lors de la première transaction
+async registerWalletOnChain(publicKey, privateKey) {
+  try {
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
 
-      // Conversion de la clé privée
-      const secretKeyArray = Uint8Array.from(privateKey); 
-      const wallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
-
-      const provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), anchor.AnchorProvider.defaultOptions());
-      const idl = JSON.parse(require('fs').readFileSync('./idl/idl.json', 'utf8'));
-      const programId = new solanaWeb3.PublicKey("GZYx7tr7vmLp92WgCfyaPmP68zm15RdSiCt31D9fUDoV");
-      const program = new anchor.Program(idl, programId, provider);
-
-      // Utilisation de findProgramAddress pour obtenir le bump
-      const [userWalletPda, bump] = await solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user_wallet"), wallet.publicKey.toBuffer()],
-        programId
-      );
-
-      // Appel RPC avec bump
-      const tx = await program.rpc.createWallet(bump, {
-        accounts: {
-          userWallet: userWalletPda,
-          owner: provider.wallet.publicKey,
-          systemProgram: solanaWeb3.SystemProgram.programId,
-        },
-        signers: [wallet], // Signature du propriétaire
-      });
-
-      console.log("Transaction réussie pour l'enregistrement du wallet :", tx);
-      return tx;
-    } catch (error) {
-      console.error("Erreur lors de l'enregistrement du wallet sur la blockchain :", error);
-      throw new Error("Erreur lors de l'enregistrement sur la blockchain");
+    // Vérifier si le wallet est déjà enregistré
+    const accountInfo = await connection.getAccountInfo(new solanaWeb3.PublicKey(publicKey));
+    if (accountInfo) {
+      console.log("Wallet déjà enregistré sur la blockchain.");
+      return; // Ne pas réinitialiser le wallet s'il existe déjà
     }
+
+    // Enregistrement si le wallet n'existe pas encore
+    const secretKeyArray = Uint8Array.from(privateKey); 
+    const wallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
+
+    const provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), anchor.AnchorProvider.defaultOptions());
+    const idl = JSON.parse(require('fs').readFileSync('./idl/idl.json', 'utf8'));
+    const programId = new solanaWeb3.PublicKey("GZYx7tr7vmLp92WgCfyaPmP68zm15RdSiCt31D9fUDoV");
+    const program = new anchor.Program(idl, programId, provider);
+
+    // Utilisation de findProgramAddress pour obtenir le bump
+    const [userWalletPda, bump] = await solanaWeb3.PublicKey.findProgramAddress(
+      [Buffer.from("user_wallet"), wallet.publicKey.toBuffer()],
+      programId
+    );
+
+    // Appel RPC avec bump
+    const tx = await program.rpc.createWallet(bump, {
+      accounts: {
+        userWallet: userWalletPda,
+        owner: provider.wallet.publicKey,
+        systemProgram: solanaWeb3.SystemProgram.programId,
+      },
+      signers: [wallet], // Signature du propriétaire
+    });
+
+    console.log("Transaction réussie pour l'enregistrement du wallet :", tx);
+    return tx;
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement du wallet sur la blockchain :", error);
+    throw new Error("Erreur lors de l'enregistrement sur la blockchain");
   }
+}
 
 
   // Méthode pour envoyer une transaction Solana (paiement direct)
@@ -117,18 +124,22 @@ class SolanaService {
     }
   }
 
-  // Méthode pour envoyer un paiement via un smart contract
   async directPayment(senderPrivateKey, recipientPublicKey, amount, asset) {
-    // Si le paiement est du SOL, utilise sendTransaction, sinon gère des assets différents
-    if (asset === "SOL") {
-      return await this.sendTransaction(
-        senderPrivateKey,
-        recipientPublicKey,
-        amount
-      );
-    } else {
-      // Gérer des paiements d'autres actifs ici
-      throw new Error("Asset non supporté");
+    try {
+      // Effectuer la transaction sans réinitialiser le wallet
+      if (asset === "SOL") {
+        return await this.sendTransaction(
+          senderPrivateKey,
+          recipientPublicKey,
+          amount
+        );
+      } else {
+        // Gestion d'autres assets (par exemple, USDC, USDT, etc.)
+        throw new Error("Asset non supporté pour le moment");
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du paiement :", error);
+      throw new Error("La transaction a échoué");
     }
   }
 
@@ -136,27 +147,27 @@ class SolanaService {
   async getTransactionHistory(publicKey) {
     try {
       const connection = new solanaWeb3.Connection(
-        solanaWeb3.clusterApiUrl("testnet"),
+        solanaWeb3.clusterApiUrl("devnet"), 
         "confirmed"
       );
-      const signatures = await connection.getSignaturesForAddress(
-        new solanaWeb3.PublicKey(publicKey)
-      );
+  
+      // Convertir la chaîne publicKey en objet PublicKey
+      const pubKey = new solanaWeb3.PublicKey(publicKey);
+  
+      console.log(`Récupération des signatures pour l'adresse : ${pubKey}`);
+  
+      const signatures = await connection.getSignaturesForAddress(pubKey);
       const transactions = [];
-
+  
       for (const signatureInfo of signatures) {
-        const transaction = await connection.getConfirmedTransaction(
-          signatureInfo.signature
-        );
+        // Remplacer getConfirmedTransaction par getTransaction
+        const transaction = await connection.getTransaction(signatureInfo.signature);
         transactions.push(transaction);
       }
-
+  
       return transactions;
     } catch (error) {
-      console.error(
-        "Erreur lors de la récupération de l'historique des transactions:",
-        error
-      );
+      console.error("Erreur lors de la récupération de l'historique des transactions :", error);
       throw new Error("Impossible de récupérer l'historique des transactions");
     }
   }
