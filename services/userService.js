@@ -38,9 +38,12 @@ class UserService {
     return bcrypt.compare(password, hashedPassword);
   }
 
-  createJwtToken(userId) {
-    const payload = { user: { id: userId } };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+  createJwtToken(userId, publicKey) {
+    const payload = { user: { id: userId, public_key: publicKey } };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return token;
   }
 
   async sendEmail(email, subject, text) {
@@ -130,7 +133,7 @@ class UserService {
       throw new Error("Invalid credentials");
     }
 
-    return this.createJwtToken(user.id);
+    return this.createJwtToken(user.id, user.public_key);
   }
 
   async sendVerificationEmail(email) {

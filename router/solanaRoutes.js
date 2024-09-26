@@ -3,7 +3,7 @@ const router = express.Router();
 const solanaController = require("../controllers/solanaController");
 
 // Route pour créer le wallet FlexFi
-router.post('/create-flexfi-wallet', solanaController.createFlexFiWallet);
+router.post("/create-flexfi-wallet", solanaController.createFlexFiWallet);
 
 // Route pour déposer des SOL dans le programme
 router.post("/deposit-sol", solanaController.depositSol);
@@ -14,7 +14,10 @@ router.post("/directPayment", solanaController.directPayment);
 // Route pour récupérer le solde du wallet
 router.get("/get-wallet-balance/:publicKey", solanaController.getWalletBalance);
 
-// Route pour récupérer le solde du wallet
-router.get("/transaction-history/:publicKey", solanaController.getTransactionHistory);
+// Route pour récupérer l'historique des Transactions du wallet
+router.get(
+  "/transaction-history/:publicKey",
+  solanaController.getTransactionHistory
+);
 
 module.exports = router;
