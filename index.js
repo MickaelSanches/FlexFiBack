@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 const authRoutes = require("./router/authRoutes");
 const proRoutes = require("./router/proRoutes");
 const solanaRoutes = require("./router/solanaRoutes");
-const bnplRoutes = require('./router/bnplRoutes');
+const bnplRoutes = require("./router/bnplRoutes");
 
 dotenv.config();
 
@@ -43,7 +43,7 @@ app.use("/pro", proRoutes);
 app.use("/solana", solanaRoutes);
 
 // Route pour la simulation BNPL
-app.use('/', bnplRoutes);
+app.use("/bnpl", bnplRoutes);
 
 app.set("view engine", "ejs");
 

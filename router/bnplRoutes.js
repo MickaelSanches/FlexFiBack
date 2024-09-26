@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { simulateBNPL } = require('../controllers/bnplController');
+const { simulateBNPL } = require("../controllers/bnplController");
 
 // Route pour la simulation BNPL
-router.post('/bnpl/simulate', simulateBNPL);
+router.post("/simulate", simulateBNPL);
 
 module.exports = router;
