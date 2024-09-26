@@ -1,8 +1,7 @@
-const solanaWeb3 = require('@solana/web3.js');
+const solanaWeb3 = require("@solana/web3.js");
 const solanaService = require("../services/solanaService");
 
 class SolanaController {
-  
   async createFlexFiWallet(req, res) {
     try {
       const result = await solanaService.createFlexFiWallet();
@@ -31,11 +30,20 @@ class SolanaController {
   }
 
   async directPayment(req, res) {
-    const { senderPrivateKey, senderPublicKey, recipientPublicKey, amount, asset } = req.body;
+    const {
+      senderPrivateKey,
+      senderPublicKey,
+      recipientPublicKey,
+      amount,
+      asset,
+    } = req.body;
 
     try {
       // Enregistrer le wallet sur la blockchain lors de la première transaction
-      await solanaService.registerWalletOnChain(senderPublicKey, senderPrivateKey);
+      await solanaService.registerWalletOnChain(
+        senderPublicKey,
+        senderPrivateKey
+      );
 
       const result = await solanaService.directPayment(
         senderPrivateKey,
@@ -68,18 +76,29 @@ class SolanaController {
   // Récupérer l'historique des transactions pour une adresse donnée
   async getTransactionHistory(req, res) {
     const { publicKey } = req.params;
-    
+
     try {
       // Assurez-vous que publicKey est une chaîne de caractères
       const publicKeyString = String(publicKey);
 
-      console.log(`Récupération des signatures pour l'adresse : ${publicKeyString}`);
+      console.log(
+        `Récupération des signatures pour l'adresse : ${publicKeyString}`
+      );
 
-      const transactions = await solanaService.getTransactionHistory(publicKeyString);
+      const transactions = await solanaService.getTransactionHistory(
+        publicKeyString
+      );
       res.json({ transactions });
     } catch (error) {
-      console.error("Erreur lors de la récupération de l'historique des transactions :", error);
-      res.status(500).json({ error: "Impossible de récupérer l'historique des transactions" });
+      console.error(
+        "Erreur lors de la récupération de l'historique des transactions :",
+        error
+      );
+      res
+        .status(500)
+        .json({
+          error: "Impossible de récupérer l'historique des transactions",
+        });
     }
   }
 }
