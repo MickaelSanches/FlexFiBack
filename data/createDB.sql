@@ -49,3 +49,21 @@ CREATE TABLE flexfi (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Création de la table 'bnpl_sales' pour gérer les transactions bnpl --
+CREATE TABLE bnpl_sales (
+    id SERIAL PRIMARY KEY,
+    seller_pubkey VARCHAR(255) NOT NULL,   -- Clé publique du vendeur
+    buyer_pubkey VARCHAR(255) NOT NULL,    -- Clé publique de l'acheteur
+    amount DECIMAL(10, 2) NOT NULL,        -- Montant total de la vente
+    is_bnpl BOOLEAN DEFAULT TRUE,          -- Indique si la vente est BNPL (toujours vrai ici)
+    months INT NOT NULL,                   -- Nombre de mensualités (6 ou 12)
+    monthly_payment DECIMAL(10, 2) NOT NULL, -- Montant de chaque mensualité
+    due_date DATE,                         -- Date d’échéance de la prochaine mensualité
+    paid BOOLEAN DEFAULT FALSE,            -- Statut de paiement de la mensualité
+    transaction_id VARCHAR(255),           -- ID de la transaction blockchain
+    details JSONB,                         -- Informations supplémentaires (comme les frais)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date de création de la transaction
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Date de mise à jour de la transaction
+);

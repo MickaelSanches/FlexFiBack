@@ -47,16 +47,16 @@ POST http://localhost:3000/solana/directPayment
 Content-Type: application/json
 
 {
-  "senderPrivateKey": [36,226,94,154,121,12,39,121,167,228,164,172,179,96,137,174,252,219,217,32,226,20,199,213,38,93,15,7,139,8,243,124,120,202,15,217,124,39,253,216,176,121,67,22,223,63,109,87,173,5,184,117,111,238,218,148,125,181,232,65,51,153,150,72],
-  "senderPublicKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
-  "recipientPublicKey": "9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E",
-  "amount": 0.1,
+  "senderPrivateKey": [33,172,70,167,121,140,49,156,30,98,227,135,173,144,196,115,132,250,160,249,158,184,163,80,241,171,215,134,79,71,107,220,220,59,33,219,246,133,81,75,153,147,152,172,186,80,169,7,34,77,126,159,220,214,7,239,178,43,129,80,34,147,44,5],
+  "senderPublicKey": "FpgzSe5gk94hpEPhU5xsiovEL2rDJTjjfzKHYbZntr2Y",
+  "recipientPublicKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
+  "amount": 0.5,
   "asset": "SOL"
 }
 
 
 ### Vérifier l'historique de transaction
-GET http://localhost:3000/solana/transaction-history/9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E
+GET http://localhost:3000/solana/transaction-history/FpgzSe5gk94hpEPhU5xsiovEL2rDJTjjfzKHYbZntr2Y
 
 ### Vérifier le solde
-GET http://localhost:3000/solana/get-wallet-balance/14EVxaExmmojAZ7PbE6pyC6zPBDt38uwbfKvf2Sxinap
+GET http://localhost:3000/solana/get-wallet-balance/FpgzSe5gk94hpEPhU5xsiovEL2rDJTjjfzKHYbZntr2Y

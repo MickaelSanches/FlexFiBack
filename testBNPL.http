@@ -1,4 +1,4 @@
-### Connexion de l'utilisateur
+### Simulateur BNPL
 POST http://localhost:3000/bnpl/simulate
 Content-Type: application/json
 
@@ -6,3 +6,32 @@ Content-Type: application/json
     "amount": 1000,
     "months": 6
 }
+
+### Créer une vente BNPL
+POST http://localhost:3000/bnpl/sale
+Content-Type: application/json
+
+{
+    "sellerPubKey": "9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E",
+    "buyerPubKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
+    "amount": 1,
+    "months": 6
+}
+
+### Payer une mensualité BNPL
+POST http://localhost:3000/bnpl/payment
+Content-Type: application/json
+
+{
+    "buyerPrivateKey": [36,226,94,154,121,12,39,121,167,228,164,172,179,96,137,174,252,219,217,32,226,20,199,213,38,93,15,7,139,8,243,124,120,202,15,217,124,39,253,216,176,121,67,22,223,63,109,87,173,5,184,117,111,238,218,148,125,181,232,65,51,153,150,72],
+    "saleId": 4
+}
+
+### Récupérer les détails d'une vente BNPl
+GET http://localhost:3000/bnpl/sale/4
+
+### Récupérer les ventes
+GET http://localhost:3000/bnpl/user/9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E/sales
+
+### Télécharger l'échéancier en pdf
+GET http://localhost:3000/bnpl/sale/4/schedule/merchant/pdf
