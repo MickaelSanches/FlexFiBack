@@ -71,23 +71,38 @@ calculateBNPLDetails(amount, months) {
 async schedulePayments() {
     const today = new Date().toISOString().split('T')[0]; // Date du jour
 
-    // Récupérer toutes les échéances à payer aujourd'hui
-    const paymentsDue = await db.query('SELECT * FROM bnpl_schedules WHERE due_date = $1 AND paid = false', [today]);
+    // Récupérer toutes les échéances à payer aujourd'hui, incluant la clé privée de l'acheteur depuis la table 'users'
+    const paymentsDue = await db.query(`
+        SELECT bnpl_schedules.*, bnpl_sales.buyer_pubkey, users.private_key 
+        FROM bnpl_schedules 
+        INNER JOIN bnpl_sales ON bnpl_schedules.sale_id = bnpl_sales.id
+        INNER JOIN users ON bnpl_sales.buyer_pubkey = users.public_key
+        WHERE bnpl_schedules.due_date = $1 AND bnpl_schedules.paid = false
+    `, [today]);
 
     for (const payment of paymentsDue.rows) {
         try {
-            // Récupérer la vente associée à l'échéance
-            const sale = await db.query('SELECT * FROM bnpl_sales WHERE id = $1', [payment.sale_id]);
-
-            if (sale.rows.length === 0) {
-                throw new Error("Vente introuvable pour l'échéance");
+            // Vérification de la clé privée de l'acheteur
+            if (!payment.private_key) {
+                throw new Error('Clé privée de l’acheteur manquante');
             }
 
-            const saleDetails = sale.rows[0];
+            let buyerPrivateKey;
+            try {
+                // Si la clé privée est stockée sous forme de chaîne JSON, la parser
+                buyerPrivateKey = JSON.parse(payment.private_key);
+            } catch (err) {
+                throw new Error('Erreur lors du parsing de la clé privée de l’acheteur');
+            }
+
+            // Vérifier que la clé privée est bien un tableau de nombres
+            if (!Array.isArray(buyerPrivateKey)) {
+                throw new Error('La clé privée de l’acheteur n’est pas un tableau valide.');
+            }
 
             // Effectuer la transaction Solana pour le prélèvement
             const paymentHash = await solanaService.transferBNPLPayment(
-                saleDetails.buyer_private_key, // Assurez-vous que la clé privée est accessible
+                buyerPrivateKey, // Clé privée correctement formatée
                 process.env.FLEXFI_PUBLIC_KEY, // Clé publique FlexFi
                 payment.payment_amount
             );

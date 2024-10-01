@@ -247,31 +247,38 @@ async registerWalletOnChain(publicKey, privateKey) {
   // Transfert pour un paiement BNPL
   async transferBNPLPayment(buyerPrivateKey, recipientPublicKey, amount) {
     try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
-      const buyerWallet = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(buyerPrivateKey));
-      const recipientPubKey = new solanaWeb3.PublicKey(recipientPublicKey);
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
 
-      const transaction = new solanaWeb3.Transaction().add(
-        solanaWeb3.SystemProgram.transfer({
-          fromPubkey: buyerWallet.publicKey,
-          toPubkey: recipientPubKey,
-          lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
-        })
-      );
+        // Vérifier que la clé privée n'est pas vide ou indéfinie
+        if (!buyerPrivateKey || !Array.isArray(buyerPrivateKey)) {
+            throw new Error('Clé privée de l’acheteur invalide');
+        }
 
-      const signature = await solanaWeb3.sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [buyerWallet]
-      );
+        // Convertir la clé privée en Uint8Array
+        const buyerWallet = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(buyerPrivateKey));
+        const recipientPubKey = new solanaWeb3.PublicKey(recipientPublicKey);
 
-      console.log("Paiement BNPL réussi avec signature :", signature);
-      return signature;
+        const transaction = new solanaWeb3.Transaction().add(
+            solanaWeb3.SystemProgram.transfer({
+                fromPubkey: buyerWallet.publicKey,
+                toPubkey: recipientPubKey,
+                lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
+            })
+        );
+
+        const signature = await solanaWeb3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [buyerWallet]
+        );
+
+        console.log("Paiement BNPL réussi avec signature :", signature);
+        return signature;
     } catch (error) {
-      console.error("Erreur lors du transfert du paiement BNPL :", error);
-      throw new Error("Erreur lors du transfert du paiement BNPL");
+        console.error("Erreur lors du transfert du paiement BNPL :", error);
+        throw new Error("Erreur lors du transfert du paiement BNPL");
     }
-  }
+}
 }
 
 module.exports = new SolanaService();
