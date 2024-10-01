@@ -72,3 +72,10 @@ CREATE TABLE bnpl_sales (
 ALTER TABLE bnpl_sales 
 ALTER COLUMN amount TYPE DECIMAL(18, 6), 
 ALTER COLUMN monthly_payment TYPE DECIMAL(18, 6);
+
+-- Modification de la table `users` pour inclure le statut KYC
+ALTER TABLE users
+ADD COLUMN kyc_status VARCHAR(20) DEFAULT 'unverified',
+ADD COLUMN kyc_verification_date TIMESTAMP,
+ADD COLUMN kyc_provider VARCHAR(50);
+

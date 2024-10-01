@@ -7,6 +7,7 @@ const authRoutes = require("./router/authRoutes");
 const proRoutes = require("./router/proRoutes");
 const solanaRoutes = require("./router/solanaRoutes");
 const bnplRoutes = require('./router/bnplRoutes');
+const kycRoutes = require('./routes/kycRoutes');
 
 dotenv.config();
 
@@ -44,6 +45,9 @@ app.use("/solana", solanaRoutes);
 
 // Route pour la simulation BNPL
 app.use('/', bnplRoutes);
+
+// Routes pour le KYC
+app.use('/kyc', kycRoutes);
 
 app.set("view engine", "ejs");
 
