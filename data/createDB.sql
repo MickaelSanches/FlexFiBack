@@ -67,3 +67,8 @@ CREATE TABLE bnpl_sales (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date de création de la transaction
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Date de mise à jour de la transaction
 );
+
+-- Modification de la table pour ajuster les décimales afin que les mensualités soient précises et correctes --
+ALTER TABLE bnpl_sales 
+ALTER COLUMN amount TYPE DECIMAL(18, 6), 
+ALTER COLUMN monthly_payment TYPE DECIMAL(18, 6);

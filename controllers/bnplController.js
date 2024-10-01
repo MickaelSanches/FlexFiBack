@@ -5,25 +5,34 @@ const db = require("../db");
 class BNPLController {
     // Simuler une vente BNPL
     simulateBNPL(req, res) {
-        const { amount, months } = req.body; // Montant de l'achat et durée en mois (6 ou 12)
-
+        const { amount, months } = req.body;
+    
         if (months !== 6 && months !== 12) {
             return res.status(400).json({ error: "Durée de paiement non valide. Choisissez 6 ou 12 mois." });
         }
-
+    
         // Calcul pour le Shopper avec frais de 12%
-        const shopperTotal = amount * 1.12;
-        const monthlyPaymentShopper = shopperTotal / months;
-
+        const shopperFee = amount * 0.12;
+        const shopperTotal = parseFloat((amount + shopperFee).toFixed(5));
+        const monthlyPaymentShopper = parseFloat((shopperTotal / months).toFixed(5));
+    
         // Calcul pour le Commerçant avec frais de 2%
-        const merchantTotal = amount * 1.02;
-
+        const merchantFee = amount * 0.02;
+        const totalCostMerchant = parseFloat((amount - merchantFee).toFixed(5));
+    
+        console.log("Simulation BNPL:");
+        console.log(`Montant: ${amount}, Mois: ${months}`);
+        console.log(`Frais Shopper: ${shopperFee}, Total Shopper: ${shopperTotal}`);
+        console.log(`Mensualité Shopper: ${monthlyPaymentShopper}`);
+        console.log(`Frais Marchand: ${merchantFee}, Total Marchand: ${totalCostMerchant}`);
+    
         return res.status(200).json({
-            totalCostShopper: shopperTotal.toFixed(2),
-            monthlyPaymentShopper: monthlyPaymentShopper.toFixed(2),
-            totalCostMerchant: merchantTotal.toFixed(2),
+            totalCostShopper: shopperTotal.toFixed(5),
+            monthlyPaymentShopper: monthlyPaymentShopper.toFixed(5),
+            totalCostMerchant: totalCostMerchant.toFixed(5),
         });
     }
+
 
     // Créer une nouvelle vente BNPL
     async createBNPLSale(req, res) {
