@@ -87,7 +87,10 @@ CREATE TABLE bnpl_sales (
 -- Modification de la table pour ajuster les décimales afin que les mensualités soient précises et correctes --
 ALTER TABLE bnpl_sales 
 ALTER COLUMN amount TYPE DECIMAL(18, 6), 
-ALTER COLUMN monthly_payment TYPE DECIMAL(18, 6);
+ALTER COLUMN monthly_payment TYPE DECIMAL(18, 6),
+ADD COLUMN shopper_fee DECIMAL(10, 2),
+ADD COLUMN merchant_fee DECIMAL(10, 2),
+ADD COLUMN currency VARCHAR(10) DEFAULT 'SOL';
 
 -- Modification de la table `users` pour inclure le statut KYC
 ALTER TABLE users
