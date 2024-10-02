@@ -39,6 +39,19 @@ CREATE TABLE business_info (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS bnpl_schedules;
+
+CREATE TABLE bnpl_schedules (
+    id SERIAL PRIMARY KEY,
+    sale_id INT NOT NULL REFERENCES bnpl_sales(id),
+    month_number INT NOT NULL,
+    payment_amount DECIMAL(10, 2) NOT NULL,
+    due_date DATE NOT NULL,
+    paid BOOLEAN DEFAULT FALSE,
+    payment_hash VARCHAR(255),  -- Le hash de la transaction une fois payée
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 DROP TABLE IF EXISTS flexfi;
 
 -- Création de la table 'flexfi' pour suivre les encaissements et la balance de l'entreprise --
