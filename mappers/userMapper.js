@@ -2,9 +2,13 @@ const pool = require("../db.js");
 
 class UserMapper {
   async findUserByEmail(email) {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    const result = await pool.query(
+      `SELECT u.*, b.*
+       FROM users u
+       LEFT JOIN business_info b ON u.id = b.user_id
+       WHERE u.email = $1`,
+      [email]
+    );
     return result.rows[0];
   }
 
