@@ -239,45 +239,75 @@ class BNPLService {
     }
   }
 
-  // Payer une mensualité BNPL
-  async payBNPLInstallment(buyerPrivateKey, saleId) {
-    try {
-      // Récupérer la vente depuis la base de données
-      const sale = await db.query("SELECT * FROM bnpl_sales WHERE id = $1", [
+// Payer une mensualité BNPL
+async payBNPLInstallment(buyerPrivateKey, saleId) {
+  try {
+    // Récupérer la vente depuis la base de données
+    const sale = await db.query("SELECT * FROM bnpl_sales WHERE id = $1", [
+      saleId,
+    ]);
+
+    if (sale.rows.length === 0) {
+      throw new Error("Vente introuvable");
+    }
+
+    const saleDetails = sale.rows[0];
+
+    // Vérifier si la vente est déjà entièrement payée
+    if (saleDetails.paid) {
+      throw new Error("Cette vente est déjà entièrement payée.");
+    }
+
+    // Récupérer le wallet FlexFi
+    const flexFiWallet = await db.query("SELECT * FROM flexfi LIMIT 1");
+    const flexFiPublicKey = flexFiWallet.rows[0].public_key;
+
+    // Récupérer la première mensualité impayée
+    const installment = await db.query(
+      `SELECT * FROM bnpl_schedules WHERE sale_id = $1 AND paid = false ORDER BY month_number ASC LIMIT 1`,
+      [saleId]
+    );
+
+    if (installment.rows.length === 0) {
+      throw new Error("Aucune mensualité impayée trouvée pour cette vente");
+    }
+
+    const installmentDetails = installment.rows[0];
+
+    // Transférer la mensualité au wallet FlexFi
+    const signature = await solanaService.transferBNPLPayment(
+      buyerPrivateKey,
+      flexFiPublicKey,
+      installmentDetails.payment_amount
+    );
+
+    console.log("Paiement de la mensualité réussi :", signature);
+
+    // Mettre à jour la base de données pour marquer la mensualité comme payée
+    await db.query(
+      "UPDATE bnpl_schedules SET paid = true, payment_hash = $1 WHERE id = $2",
+      [signature, installmentDetails.id]
+    );
+
+    // Vérifier si toutes les mensualités sont payées
+    const allInstallmentsPaid = await db.query(
+      `SELECT COUNT(*) FROM bnpl_schedules WHERE sale_id = $1 AND paid = false`,
+      [saleId]
+    );
+
+    // Si toutes les mensualités sont payées, mettre à jour la vente principale
+    if (parseInt(allInstallmentsPaid.rows[0].count, 10) === 0) {
+      await db.query("UPDATE bnpl_sales SET paid = true WHERE id = $1", [
         saleId,
       ]);
-
-      if (sale.rows.length === 0) {
-        throw new Error("Vente introuvable");
-      }
-
-      const saleDetails = sale.rows[0];
-
-      // Récupérer le wallet FlexFi
-      const flexFiWallet = await db.query("SELECT * FROM flexfi LIMIT 1");
-      const flexFiPublicKey = flexFiWallet.rows[0].public_key;
-
-      // Transférer la mensualité au wallet FlexFi
-      const signature = await solanaService.transferBNPLPayment(
-        buyerPrivateKey,
-        flexFiPublicKey,
-        saleDetails.monthly_payment
-      );
-
-      console.log("Paiement de la mensualité réussi :", signature);
-
-      // Mettre à jour la base de données pour marquer la mensualité comme payée
-      await db.query(
-        "UPDATE bnpl_sales SET paid = true, transaction_id = $1 WHERE id = $2",
-        [signature, saleId]
-      );
-
-      return { message: "Paiement de la mensualité réussi", signature };
-    } catch (error) {
-      console.error("Erreur lors du paiement de la mensualité BNPL :", error);
-      throw new Error("Impossible de payer la mensualité BNPL");
     }
+
+    return { message: "Paiement de la mensualité réussi", signature };
+  } catch (error) {
+    console.error("Erreur lors du paiement de la mensualité BNPL :", error);
+    throw new Error("Impossible de payer la mensualité BNPL");
   }
+}
 
   // Récupérer les détails d'une vente BNPL
   async getBNPLSaleDetails(saleId) {

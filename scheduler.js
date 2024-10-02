@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const bnplService = require("./services/bnplServices");
 
 // Planifier la tâche pour qu'elle s'exécute tous les jours à minuit
-cron.schedule("* * * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
   console.log("Vérification des paiements BNPL dus...");
 
   try {
