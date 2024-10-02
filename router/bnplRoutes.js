@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
-<<<<<<< HEAD
 const bnplController = require("../controllers/bnplController");
 
 // Route pour la simulation BNPL
-router.post('/bnpl/simulate', bnplController.simulateBNPL);
+router.post("/bnpl/simulate", bnplController.simulateBNPL);
 
 // Créer une nouvelle vente BNPL
 router.post("/bnpl/sale", bnplController.createBNPLSale);
@@ -19,12 +18,9 @@ router.get("/bnpl/sale/:saleId", bnplController.getBNPLSaleDetails);
 router.get("/bnpl/user/:userPubKey/sales", bnplController.getUserBNPLSales);
 
 // Télécharger l’échéancier
-router.get("/bnpl/sale/:saleId/schedule/:type/pdf", bnplController.downloadSchedulePDF);
-=======
-const { simulateBNPL } = require("../controllers/bnplController");
-
-// Route pour la simulation BNPL
-router.post("/simulate", simulateBNPL);
->>>>>>> 575b9505cec0a26973dc91dba3bc612214dcd74b
+router.get(
+  "/bnpl/sale/:saleId/schedule/:type/pdf",
+  bnplController.downloadSchedulePDF
+);
 
 module.exports = router;
