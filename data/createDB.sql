@@ -39,6 +39,8 @@ CREATE TABLE business_info (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS flexfi;
+
 -- Création de la table 'flexfi' pour suivre les encaissements et la balance de l'entreprise --
 CREATE TABLE flexfi (
     id SERIAL PRIMARY KEY,
@@ -50,6 +52,7 @@ CREATE TABLE flexfi (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TABLE IF EXISTS bnpl_sales;
 
 -- Création de la table 'bnpl_sales' pour gérer les transactions bnpl --
 CREATE TABLE bnpl_sales (
