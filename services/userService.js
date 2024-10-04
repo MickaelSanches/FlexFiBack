@@ -38,13 +38,26 @@ class UserService {
     return bcrypt.compare(password, hashedPassword);
   }
 
-  createJwtToken(userId, publicKey, email, seedPhrase) {
+  createJwtToken(
+    userId,
+    publicKey,
+    email,
+    seedPhrase,
+    siren,
+    legalCategory,
+    mainActivity,
+    denomination
+  ) {
     const payload = {
       user: {
         id: userId,
         public_key: publicKey,
         email: email,
         seed_phrase: seedPhrase,
+        siren: siren,
+        categorie_juridique: legalCategory,
+        activite_principale: mainActivity,
+        denomination: denomination,
       },
     };
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -143,13 +156,15 @@ class UserService {
       throw new Error("Invalid credentials");
     }
 
-    console.log("Seed phrase_________ : ", user.seed_phrase);
-
     return this.createJwtToken(
       user.id,
       user.public_key,
       user.email,
-      user.seed_phrase
+      user.seed_phrase,
+      user.siren,
+      user.categorie_juridique,
+      user.activite_principale,
+      user.denomination
     );
   }
 
