@@ -32,7 +32,7 @@ Content-Type: application/json
 GET http://localhost:3000/bnpl/sale/1
 
 ### Récupérer les ventes
-GET http://localhost:3000/bnpl/user/BK1hRVh4tgUkFSuRDFvLS2n7qCW13EmkiJdhVPUJ1EjW/sales
+GET http://localhost:3000/bnpl/user/wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd/sales
 
 ### Télécharger l'échéancier en pdf
 GET http://localhost:3000/bnpl/sale/1/schedule/merchant/pdf

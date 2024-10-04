@@ -12,6 +12,17 @@ class UserMapper {
     return result.rows[0];
   }
 
+  async findUserByPublicKey(publicKey) {
+    const result = await pool.query(
+      `SELECT u.*, b.*
+       FROM users u
+       LEFT JOIN business_info b ON u.id = b.user_id
+       WHERE u.public_key = $1`,
+      [publicKey]
+    );
+    return result.rows[0];
+  }
+
   async createUser(email, hashedPassword, seedPhrase, publicKey, privateKey) {
     const result = await pool.query(
       `INSERT INTO users (email, password, seed_phrase, public_key, private_key) 
