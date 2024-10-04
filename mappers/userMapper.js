@@ -30,7 +30,7 @@ class UserMapper {
       denomination,
       date_creation,
     } = businessInfo;
-    await db.query(
+    await pool.query(
       `INSERT INTO business_info (user_id, siren, categorie_juridique, activite_principale, denomination, date_creation) 
         VALUES ($1, $2, $3, $4, $5, $6)`,
       [

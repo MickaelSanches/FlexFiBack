@@ -11,7 +11,44 @@ exports.register = async (req, res) => {
     res.json({
       message: "User successfully registered.",
       seed_phrase: user.seed_phrase,
-      public_key: user.public_key // Clé publique du wallet
+      public_key: user.public_key, // Clé publique du wallet
+    });
+  } catch (error) {
+    console.error("Error registering user:", error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.registerProfessional = async (req, res) => {
+  const {
+    email,
+    password,
+    siren,
+    mainActivity,
+    companyName,
+    creationDate,
+    legalCategory,
+  } = req.body;
+
+  const businessInfo = {
+    siren: siren,
+    categorie_juridique: legalCategory,
+    activite_principale: mainActivity,
+    denomination: companyName,
+    date_creation: creationDate,
+  };
+
+  try {
+    const user = await userService.registerProfessional(
+      email,
+      password,
+      businessInfo
+    );
+
+    res.json({
+      message: "User successfully registered.",
+      seed_phrase: user.seed_phrase,
+      public_key: user.public_key,
     });
   } catch (error) {
     console.error("Error registering user:", error.message);

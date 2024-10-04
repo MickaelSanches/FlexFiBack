@@ -1,6 +1,32 @@
 const solanaWeb3 = require("@solana/web3.js");
 const anchor = require("@project-serum/anchor");
-const db = require('../db');
+const db = require("../db");
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchTransactionWithRetries(connection, signature, retries = 5) {
+  let attempt = 0;
+  let delay = 500; // Commence avec un délai de 500ms
+
+  while (attempt < retries) {
+    try {
+      const transaction = await connection.getTransaction(signature);
+      return transaction;
+    } catch (error) {
+      if (error.message.includes("429")) {
+        console.log(
+          `Serveur a répondu avec 429. Nouvelle tentative après ${delay}ms...`
+        );
+        await sleep(delay);
+        delay *= 2; // Backoff exponentiel : double le délai à chaque tentative
+      } else {
+        throw error; // Autres erreurs, on les propage
+      }
+    }
+    attempt++;
+  }
+  throw new Error("Trop de tentatives échouées. Veuillez réessayer plus tard.");
+}
 
 class SolanaService {
   // Méthode pour générer un nouveau wallet Solana
@@ -19,10 +45,13 @@ class SolanaService {
       const { publicKey, privateKey } = this.generateWallet();
 
       // Enregistrement du wallet FlexFi dans la base de données
-      await db.query(`
+      await db.query(
+        `
         INSERT INTO flexfi (public_key, private_key) 
         VALUES ($1, $2)
-      `, [publicKey, privateKey]);
+      `,
+        [publicKey, privateKey]
+      );
 
       // Approvisionner le wallet en SOL
       await this.airdropSol(publicKey);
@@ -41,7 +70,10 @@ class SolanaService {
   // Ajout de la méthode airdropSol pour créditer un wallet en SOL
   async airdropSol(publicKey) {
     try {
-      const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
 
       // Demande de 1 SOL du faucet Devnet
       const airdropSignature = await connection.requestAirdrop(
@@ -58,50 +90,67 @@ class SolanaService {
     }
   }
 
-// Méthode pour enregistrer un wallet sur la blockchain lors de la première transaction
-async registerWalletOnChain(publicKey, privateKey) {
-  try {
-    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
+  // Méthode pour enregistrer un wallet sur la blockchain lors de la première transaction
+  async registerWalletOnChain(publicKey, privateKey) {
+    try {
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
 
-    // Vérifier si le wallet est déjà enregistré
-    const accountInfo = await connection.getAccountInfo(new solanaWeb3.PublicKey(publicKey));
-    if (accountInfo) {
-      console.log("Wallet déjà enregistré sur la blockchain.");
-      return; // Ne pas réinitialiser le wallet s'il existe déjà
+      // Vérifier si le wallet est déjà enregistré
+      const accountInfo = await connection.getAccountInfo(
+        new solanaWeb3.PublicKey(publicKey)
+      );
+      if (accountInfo) {
+        console.log("Wallet déjà enregistré sur la blockchain.");
+        return; // Ne pas réinitialiser le wallet s'il existe déjà
+      }
+
+      // Enregistrement si le wallet n'existe pas encore
+      const secretKeyArray = Uint8Array.from(privateKey);
+      const wallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
+
+      const provider = new anchor.AnchorProvider(
+        connection,
+        new anchor.Wallet(wallet),
+        anchor.AnchorProvider.defaultOptions()
+      );
+      const idl = JSON.parse(
+        require("fs").readFileSync("./idl/idl.json", "utf8")
+      );
+      const programId = new solanaWeb3.PublicKey(
+        "GZYx7tr7vmLp92WgCfyaPmP68zm15RdSiCt31D9fUDoV"
+      );
+      const program = new anchor.Program(idl, programId, provider);
+
+      // Utilisation de findProgramAddress pour obtenir le bump
+      const [userWalletPda, bump] =
+        await solanaWeb3.PublicKey.findProgramAddress(
+          [Buffer.from("user_wallet"), wallet.publicKey.toBuffer()],
+          programId
+        );
+
+      // Appel RPC avec bump
+      const tx = await program.rpc.createWallet(bump, {
+        accounts: {
+          userWallet: userWalletPda,
+          owner: provider.wallet.publicKey,
+          systemProgram: solanaWeb3.SystemProgram.programId,
+        },
+        signers: [wallet], // Signature du propriétaire
+      });
+
+      console.log("Transaction réussie pour l'enregistrement du wallet :", tx);
+      return tx;
+    } catch (error) {
+      console.error(
+        "Erreur lors de l'enregistrement du wallet sur la blockchain :",
+        error
+      );
+      throw new Error("Erreur lors de l'enregistrement sur la blockchain");
     }
-
-    // Enregistrement si le wallet n'existe pas encore
-    const secretKeyArray = Uint8Array.from(privateKey); 
-    const wallet = solanaWeb3.Keypair.fromSecretKey(secretKeyArray);
-
-    const provider = new anchor.AnchorProvider(connection, new anchor.Wallet(wallet), anchor.AnchorProvider.defaultOptions());
-    const idl = JSON.parse(require('fs').readFileSync('./idl/idl.json', 'utf8'));
-    const programId = new solanaWeb3.PublicKey("GZYx7tr7vmLp92WgCfyaPmP68zm15RdSiCt31D9fUDoV");
-    const program = new anchor.Program(idl, programId, provider);
-
-    // Utilisation de findProgramAddress pour obtenir le bump
-    const [userWalletPda, bump] = await solanaWeb3.PublicKey.findProgramAddress(
-      [Buffer.from("user_wallet"), wallet.publicKey.toBuffer()],
-      programId
-    );
-
-    // Appel RPC avec bump
-    const tx = await program.rpc.createWallet(bump, {
-      accounts: {
-        userWallet: userWalletPda,
-        owner: provider.wallet.publicKey,
-        systemProgram: solanaWeb3.SystemProgram.programId,
-      },
-      signers: [wallet], // Signature du propriétaire
-    });
-
-    console.log("Transaction réussie pour l'enregistrement du wallet :", tx);
-    return tx;
-  } catch (error) {
-    console.error("Erreur lors de l'enregistrement du wallet sur la blockchain :", error);
-    throw new Error("Erreur lors de l'enregistrement sur la blockchain");
   }
-}
 
   // Méthode pour envoyer une transaction Solana (paiement direct)
   async sendTransaction(senderPrivateKey, recipientPublicKey, amount) {
@@ -113,15 +162,17 @@ async registerWalletOnChain(publicKey, privateKey) {
       const senderWallet = solanaWeb3.Keypair.fromSecretKey(
         Uint8Array.from(senderPrivateKey)
       );
-  
+
       // Récupérer la clé publique de FlexFi en base de données
-      const flexFiWallet = await db.query("SELECT public_key FROM flexfi LIMIT 1");
+      const flexFiWallet = await db.query(
+        "SELECT public_key FROM flexfi LIMIT 1"
+      );
       const flexFiPublicKey = flexFiWallet.rows[0].public_key;
-  
+
       // Calcul des frais de 1% et du montant net à envoyer
       const fees = amount * 0.01;
       const netAmount = amount - fees;
-  
+
       // Transaction : envoi de l'argent au destinataire
       const transaction = new solanaWeb3.Transaction()
         .add(
@@ -139,23 +190,26 @@ async registerWalletOnChain(publicKey, privateKey) {
             lamports: solanaWeb3.LAMPORTS_PER_SOL * fees,
           })
         );
-  
+
       // Signer et envoyer la transaction
       const signature = await solanaWeb3.sendAndConfirmTransaction(
         connection,
         transaction,
         [senderWallet]
       );
-  
+
       // Mettre à jour le total des frais encaissés pour FlexFi
-      await db.query(`
+      await db.query(
+        `
         UPDATE flexfi
         SET total_received = total_received + $1,
             total_fees = total_fees + $2,
             updated_at = CURRENT_TIMESTAMP
         WHERE public_key = $3
-      `, [amount, fees, flexFiPublicKey]);
-  
+      `,
+        [amount, fees, flexFiPublicKey]
+      );
+
       console.log("Transaction réussie avec signature:", signature);
       return signature;
     } catch (error) {
@@ -202,27 +256,34 @@ async registerWalletOnChain(publicKey, privateKey) {
   async getTransactionHistory(publicKey) {
     try {
       const connection = new solanaWeb3.Connection(
-        solanaWeb3.clusterApiUrl("devnet"), 
+        solanaWeb3.clusterApiUrl("devnet"),
         "confirmed"
       );
-  
-      // Convertir la chaîne publicKey en objet PublicKey
+
       const pubKey = new solanaWeb3.PublicKey(publicKey);
-  
+
       console.log(`Récupération des signatures pour l'adresse : ${pubKey}`);
-  
-      const signatures = await connection.getSignaturesForAddress(pubKey);
+
+      // Limiter le nombre de signatures pour réduire les requêtes
+      const signatures = await connection.getSignaturesForAddress(pubKey, {
+        limit: 10,
+      });
       const transactions = [];
-  
+
       for (const signatureInfo of signatures) {
-        // Remplacer getConfirmedTransaction par getTransaction
-        const transaction = await connection.getTransaction(signatureInfo.signature);
+        const transaction = await fetchTransactionWithRetries(
+          connection,
+          signatureInfo.signature
+        );
         transactions.push(transaction);
       }
-  
+
       return transactions;
     } catch (error) {
-      console.error("Erreur lors de la récupération de l'historique des transactions :", error);
+      console.error(
+        "Erreur lors de la récupération de l'historique des transactions :",
+        error
+      );
       throw new Error("Impossible de récupérer l'historique des transactions");
     }
   }
@@ -247,45 +308,43 @@ async registerWalletOnChain(publicKey, privateKey) {
   // Transfert pour un paiement BNPL
   async transferBNPLPayment(buyerPrivateKey, recipientPublicKey, amount) {
     try {
-        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
+      const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl("devnet"),
+        "confirmed"
+      );
 
-        // Vérifier que la clé privée n'est pas vide ou indéfinie
-        if (!buyerPrivateKey || !Array.isArray(buyerPrivateKey)) {
-            throw new Error('Clé privée de l’acheteur invalide');
-        }
+      // Vérifier que la clé privée n'est pas vide ou indéfinie
+      if (!buyerPrivateKey || !Array.isArray(buyerPrivateKey)) {
+        throw new Error("Clé privée de l’acheteur invalide");
+      }
 
-        // Convertir la clé privée en Uint8Array
-        const buyerWallet = solanaWeb3.Keypair.fromSecretKey(Uint8Array.from(buyerPrivateKey));
-        const recipientPubKey = new solanaWeb3.PublicKey(recipientPublicKey);
+      // Convertir la clé privée en Uint8Array
+      const buyerWallet = solanaWeb3.Keypair.fromSecretKey(
+        Uint8Array.from(buyerPrivateKey)
+      );
+      const recipientPubKey = new solanaWeb3.PublicKey(recipientPublicKey);
 
-        const transaction = new solanaWeb3.Transaction().add(
-            solanaWeb3.SystemProgram.transfer({
-                fromPubkey: buyerWallet.publicKey,
-                toPubkey: recipientPubKey,
-                lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
-            })
-        );
+      const transaction = new solanaWeb3.Transaction().add(
+        solanaWeb3.SystemProgram.transfer({
+          fromPubkey: buyerWallet.publicKey,
+          toPubkey: recipientPubKey,
+          lamports: solanaWeb3.LAMPORTS_PER_SOL * amount, // Conversion de SOL en lamports
+        })
+      );
 
-        const signature = await solanaWeb3.sendAndConfirmTransaction(
-            connection,
-            transaction,
-            [buyerWallet]
-        );
+      const signature = await solanaWeb3.sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [buyerWallet]
+      );
 
-        console.log("Paiement BNPL réussi avec signature :", signature);
-        return signature;
+      console.log("Paiement BNPL réussi avec signature :", signature);
+      return signature;
     } catch (error) {
-        console.error("Erreur lors du transfert du paiement BNPL :", error);
-        throw new Error("Erreur lors du transfert du paiement BNPL");
+      console.error("Erreur lors du transfert du paiement BNPL :", error);
+      throw new Error("Erreur lors du transfert du paiement BNPL");
     }
-}
+  }
 }
 
 module.exports = new SolanaService();
-
-
-
-
-
-
-

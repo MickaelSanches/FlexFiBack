@@ -16,6 +16,7 @@ router.post("/send-confirmation-email", authController.sendConfirmationEmail);
 
 // Route pour enregistrer l'utilisateur en base de données
 router.post("/register", authController.register);
+router.post("/register-professional", authController.registerProfessional);
 
 // Connexion - Étape 4
 router.post("/login", authController.login);

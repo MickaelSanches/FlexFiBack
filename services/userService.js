@@ -120,12 +120,15 @@ class UserService {
     const seedPhrase = this.generateSeedPhrase();
     const hashedPassword = await this.hashPassword(password);
 
+    const { publicKey, privateKey } = solanaService.generateWallet();
+
     // Crée l'utilisateur professionnel et récupère son ID
     const user = await userMapper.createUser(
       email,
       hashedPassword,
       seedPhrase,
-      "pending"
+      publicKey,
+      JSON.stringify(privateKey)
     );
 
     // Insère les informations professionnelles dans la table business_info
