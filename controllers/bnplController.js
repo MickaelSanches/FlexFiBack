@@ -1,6 +1,7 @@
 const bnplService = require("../services/bnplServices");
 const pdfService = require("../services/pdfService");
 const db = require("../db");
+const userMapper = require("../mappers/userMapper");
 
 class BNPLController {
   // Simuler une vente BNPL
@@ -8,11 +9,9 @@ class BNPLController {
     const { amount, months } = req.body;
 
     if (months !== 6 && months !== 12) {
-      return res
-        .status(400)
-        .json({
-          error: "Durée de paiement non valide. Choisissez 6 ou 12 mois.",
-        });
+      return res.status(400).json({
+        error: "Durée de paiement non valide. Choisissez 6 ou 12 mois.",
+      });
     }
 
     // Calcul pour le Shopper avec frais de 12%
@@ -69,11 +68,25 @@ class BNPLController {
   // Payer une mensualité BNPL
   async payBNPLInstallment(req, res) {
     const { buyerPrivateKey, saleId } = req.body;
+
+    const buyerPrivateKeyString =
+      "[223,42,93,97,28,175,21,213,3,132,184,105,3,222,53,252,242,76,24,203,233,38,44,255,252,64,7,236,134,72,79,124,71,133,143,173,124,208,71,66,230,171,150,34,230,202,214,38,60,11,37,131,42,101,175,64,1,248,252,31,74,211,71,97]";
+
+    // Supprimer les crochets de début et de fin, puis diviser la chaîne en éléments du tableau
+    const buyerPrivateKeyArray = buyerPrivateKeyString
+      .replace("[", "") // Retirer le crochet ouvrant
+      .replace("]", "") // Retirer le crochet fermant
+      .split(",") // Diviser la chaîne en tableau
+      .map(Number); // Convertir chaque élément en nombre
+
+    console.log("______________ : " + buyerPrivateKeyArray);
+
     try {
       const paymentResult = await bnplService.payBNPLInstallment(
-        buyerPrivateKey,
+        buyerPrivateKeyArray,
         saleId
       );
+
       res.status(200).json({
         message: "Paiement de la mensualité réussi",
         paymentResult,
@@ -97,11 +110,9 @@ class BNPLController {
         "Erreur lors de la récupération des détails de la vente BNPL :",
         error
       );
-      res
-        .status(500)
-        .json({
-          error: "Erreur lors de la récupération des détails de la vente BNPL",
-        });
+      res.status(500).json({
+        error: "Erreur lors de la récupération des détails de la vente BNPL",
+      });
     }
   }
 
@@ -116,12 +127,10 @@ class BNPLController {
         "Erreur lors de la récupération des ventes BNPL de l'utilisateur :",
         error
       );
-      res
-        .status(500)
-        .json({
-          error:
-            "Erreur lors de la récupération des ventes BNPL de l'utilisateur",
-        });
+      res.status(500).json({
+        error:
+          "Erreur lors de la récupération des ventes BNPL de l'utilisateur",
+      });
     }
   }
 
@@ -161,6 +170,30 @@ class BNPLController {
     } catch (error) {
       console.error("Erreur lors de la génération du PDF :", error);
       res.status(500).json({ error: "Erreur lors de la génération du PDF" });
+    }
+  }
+
+  async getPrivateKeyByEmail(req, res) {
+    const { email } = req.params;
+
+    try {
+      const user = await userMapper.findUserByEmail(email);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const userPrivateKey = user.private_key;
+
+      return res.status(200).json({
+        message: "Private key successfully retrieved",
+        privateKey: userPrivateKey,
+      });
+    } catch (error) {
+      console.error("Error retrieving private key:", error);
+      return res
+        .status(500)
+        .json({ error: "Server error retrieving private key" });
     }
   }
 }

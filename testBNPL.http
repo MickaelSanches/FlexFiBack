@@ -13,7 +13,7 @@ Content-Type: application/json
 
 {
     "sellerPubKey": "wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd",
-    "buyerPubKey": "BK1hRVh4tgUkFSuRDFvLS2n7qCW13EmkiJdhVPUJ1EjW",
+    "buyerPubKey": "5pC4zNjNDjzvXLZTM4hCfgtRqBS8a4W6abZXc7Za69Qt",
     "amount": 3,
     "months": 3
 }
@@ -29,10 +29,10 @@ Content-Type: application/json
 
 
 ### Récupérer les détails d'une vente BNPl
-GET http://localhost:3000/bnpl/sale/1
+GET http://localhost:3000/bnpl/sale/9
 
 ### Récupérer les ventes
-GET http://localhost:3000/bnpl/user/BK1hRVh4tgUkFSuRDFvLS2n7qCW13EmkiJdhVPUJ1EjW/sales
+GET http://localhost:3000/bnpl/user/wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd/sales
 
 ### Télécharger l'échéancier en pdf
-GET http://localhost:3000/bnpl/sale/1/schedule/merchant/pdf
+GET http://localhost:3000/bnpl/sale/9/schedule/merchant/pdf
