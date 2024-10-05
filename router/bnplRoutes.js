@@ -17,6 +17,8 @@ router.get("/sale/:saleId", bnplController.getBNPLSaleDetails);
 // Récupérer toutes les ventes BNPL pour un utilisateur
 router.get("/user/:userPubKey/sales", bnplController.getUserBNPLSales);
 
+router.get("/user/:email/privateKey", bnplController.getPrivateKeyByEmail);
+
 // Télécharger l’échéancier
 router.get(
   "/sale/:saleId/schedule/:type/pdf",
