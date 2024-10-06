@@ -12,10 +12,10 @@ POST http://localhost:3000/bnpl/sale
 Content-Type: application/json
 
 {
-    "sellerPubKey": "wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd",
-    "buyerPubKey": "5pC4zNjNDjzvXLZTM4hCfgtRqBS8a4W6abZXc7Za69Qt",
-    "amount": 3,
-    "months": 3
+    "sellerPubKey": "9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E",
+    "buyerPubKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
+    "amount": 1,
+    "months": 6
 }
 
 ### Payer une mensualité BNPL
@@ -23,13 +23,13 @@ POST http://localhost:3000/bnpl/payment
 Content-Type: application/json
 
 {
-    "buyerPrivateKey": [255,165,188,28,132,19,98,139,65,173,172,166,231,117,150,213,160,156,251,137,99,45,235,230,253,101,102,203,101,98,233,132,153,50,28,162,145,68,184,77,192,117,104,96,131,224,105,165,50,182,233,14,6,237,41,82,60,36,167,127,161,249,213,229],
+    "buyerPrivateKey": [36,226,94,154,121,12,39,121,167,228,164,172,179,96,137,174,252,219,217,32,226,20,199,213,38,93,15,7,139,8,243,124,120,202,15,217,124,39,253,216,176,121,67,22,223,63,109,87,173,5,184,117,111,238,218,148,125,181,232,65,51,153,150,72],
     "saleId": 4
 }
 
 
 ### Récupérer les détails d'une vente BNPl
-GET http://localhost:3000/bnpl/sale/9
+GET http://localhost:3000/bnpl/sale/24
 
 ### Récupérer les ventes
 GET http://localhost:3000/bnpl/user/wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd/sales

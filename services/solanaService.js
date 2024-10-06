@@ -153,70 +153,79 @@ class SolanaService {
   }
 
   // Méthode pour envoyer une transaction Solana (paiement direct)
-  async sendTransaction(senderPrivateKey, recipientPublicKey, amount) {
+  async sendTransaction(senderPrivateKey, recipientPublicKey, amount, isBNPL = false) {
     try {
-      const connection = new solanaWeb3.Connection(
-        solanaWeb3.clusterApiUrl("devnet"),
-        "confirmed"
-      );
-      const senderWallet = solanaWeb3.Keypair.fromSecretKey(
-        Uint8Array.from(senderPrivateKey)
-      );
-
-      // Récupérer la clé publique de FlexFi en base de données
-      const flexFiWallet = await db.query(
-        "SELECT public_key FROM flexfi LIMIT 1"
-      );
-      const flexFiPublicKey = flexFiWallet.rows[0].public_key;
-
-      // Calcul des frais de 1% et du montant net à envoyer
-      const fees = amount * 0.01;
-      const netAmount = amount - fees;
-
-      // Transaction : envoi de l'argent au destinataire
-      const transaction = new solanaWeb3.Transaction()
-        .add(
-          solanaWeb3.SystemProgram.transfer({
-            fromPubkey: senderWallet.publicKey,
-            toPubkey: new solanaWeb3.PublicKey(recipientPublicKey),
-            lamports: solanaWeb3.LAMPORTS_PER_SOL * netAmount,
-          })
-        )
-        // Transaction : envoi des frais à FlexFi
-        .add(
-          solanaWeb3.SystemProgram.transfer({
-            fromPubkey: senderWallet.publicKey,
-            toPubkey: new solanaWeb3.PublicKey(flexFiPublicKey),
-            lamports: solanaWeb3.LAMPORTS_PER_SOL * fees,
-          })
+        const connection = new solanaWeb3.Connection(
+            solanaWeb3.clusterApiUrl("devnet"),
+            "confirmed"
+        );
+        const senderWallet = solanaWeb3.Keypair.fromSecretKey(
+            Uint8Array.from(senderPrivateKey)
         );
 
-      // Signer et envoyer la transaction
-      const signature = await solanaWeb3.sendAndConfirmTransaction(
-        connection,
-        transaction,
-        [senderWallet]
-      );
+        // Récupérer la clé publique de FlexFi en base de données
+        const flexFiWallet = await db.query(
+            "SELECT public_key FROM flexfi LIMIT 1"
+        );
+        const flexFiPublicKey = flexFiWallet.rows[0].public_key;
 
-      // Mettre à jour le total des frais encaissés pour FlexFi
-      await db.query(
-        `
-        UPDATE flexfi
-        SET total_received = total_received + $1,
-            total_fees = total_fees + $2,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE public_key = $3
-      `,
-        [amount, fees, flexFiPublicKey]
-      );
+        // Si ce n'est pas une transaction BNPL, calculer les frais de 1%
+        let fees = 0;
+        let netAmount = amount;
+        if (!isBNPL) {
+            fees = amount * 0.01;
+            netAmount = amount - fees;
+        }
 
-      console.log("Transaction réussie avec signature:", signature);
-      return signature;
+        // Transaction : envoi de l'argent au destinataire
+        const transaction = new solanaWeb3.Transaction()
+            .add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: senderWallet.publicKey,
+                    toPubkey: new solanaWeb3.PublicKey(recipientPublicKey),
+                    lamports: solanaWeb3.LAMPORTS_PER_SOL * netAmount,
+                })
+            );
+
+        // Ajouter la transaction de frais uniquement si ce n'est pas une transaction BNPL
+        if (!isBNPL) {
+            transaction.add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: senderWallet.publicKey,
+                    toPubkey: new solanaWeb3.PublicKey(flexFiPublicKey),
+                    lamports: solanaWeb3.LAMPORTS_PER_SOL * fees,
+                })
+            );
+        }
+
+        // Signer et envoyer la transaction
+        const signature = await solanaWeb3.sendAndConfirmTransaction(
+            connection,
+            transaction,
+            [senderWallet]
+        );
+
+        // Mettre à jour le total des frais encaissés pour FlexFi
+        if (!isBNPL) {
+            await db.query(
+                `
+                UPDATE flexfi
+                SET total_received = total_received + $1,
+                    total_fees = total_fees + $2,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE public_key = $3
+            `,
+                [amount, fees, flexFiPublicKey]
+            );
+        }
+
+        console.log("Transaction réussie avec signature:", signature);
+        return signature;
     } catch (error) {
-      console.error("Erreur lors de l'envoi de la transaction:", error);
-      throw new Error("La transaction a échoué");
+        console.error("Erreur lors de l'envoi de la transaction:", error);
+        throw new Error("La transaction a échoué");
     }
-  }
+}
 
   // Méthode pour effectuer un dépôt de SOL
   async depositSol(senderPrivateKey, amount) {

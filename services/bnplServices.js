@@ -140,7 +140,6 @@ class BNPLService {
           `Erreur lors du paiement de l'échéance ID ${payment.id}:`,
           error
         );
-        // Gestion des erreurs pour notifier les utilisateurs
       }
     }
   }
@@ -159,8 +158,8 @@ class BNPLService {
       console.log("Création de la vente BNPL dans la base de données...");
       const newSale = await db.query(
         `INSERT INTO bnpl_sales (seller_pubkey, buyer_pubkey, amount, months, monthly_payment, shopper_fee, merchant_fee, currency)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             RETURNING *`,
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            RETURNING *`,
         [
           sellerPubKey,
           buyerPubKey,
@@ -185,7 +184,7 @@ class BNPLService {
       for (const payment of paymentSchedule) {
         await db.query(
           `INSERT INTO bnpl_schedules (sale_id, month_number, payment_amount, due_date)
-                 VALUES ($1, $2, $3, $4)`,
+            VALUES ($1, $2, $3, $4)`,
           [
             payment.sale_id,
             payment.month_number,
@@ -222,11 +221,12 @@ class BNPLService {
       const privateKeyArray = Uint8Array.from(flexFiPrivateKeyArray);
 
       // Transfert de l'avance de fonds au marchand
-      const advanceAmount = parseFloat((amount * 0.98).toFixed(2));
+      const advanceAmount = parseFloat((amount * 0.98).toFixed(5));
       const transactionSignature = await solanaService.sendTransaction(
         privateKeyArray,
         sellerPubKey,
-        advanceAmount
+        advanceAmount,
+        true
       );
 
       console.log(
