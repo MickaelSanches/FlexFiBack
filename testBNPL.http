@@ -12,10 +12,10 @@ POST http://localhost:3000/bnpl/sale
 Content-Type: application/json
 
 {
-    "sellerPubKey": "9r9h83rawiCWukzCKaVKj9Fhx9Brpzti9ifQptSGM1E",
-    "buyerPubKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
+    "sellerPubKey": "wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd",
+    "buyerPubKey": "5pC4zNjNDjzvXLZTM4hCfgtRqBS8a4W6abZXc7Za69Qt",
     "amount": 1,
-    "months": 6
+    "months": 3
 }
 
 ### Payer une mensualité BNPL
@@ -29,7 +29,7 @@ Content-Type: application/json
 
 
 ### Récupérer les détails d'une vente BNPl
-GET http://localhost:3000/bnpl/sale/24
+GET http://localhost:3000/bnpl/sale/12
 
 ### Récupérer les ventes
 GET http://localhost:3000/bnpl/user/wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd/sales

@@ -47,10 +47,10 @@ POST http://localhost:3000/solana/directPayment
 Content-Type: application/json
 
 {
-  "senderPrivateKey": [33,172,70,167,121,140,49,156,30,98,227,135,173,144,196,115,132,250,160,249,158,184,163,80,241,171,215,134,79,71,107,220,220,59,33,219,246,133,81,75,153,147,152,172,186,80,169,7,34,77,126,159,220,214,7,239,178,43,129,80,34,147,44,5],
-  "senderPublicKey": "FpgzSe5gk94hpEPhU5xsiovEL2rDJTjjfzKHYbZntr2Y",
-  "recipientPublicKey": "98WdSe13pFVVRrWtw2bDN68NttUXcGWcysAicpaLMBS7",
-  "amount": 0.5,
+  "senderPrivateKey": [47,235,250,47,65,84,201,207,39,80,161,11,155,178,143,20,70,185,49,181,247,133,102,225,251,32,69,211,62,99,189,5,14,21,14,60,143,24,205,127,111,78,153,18,16,86,112,214,111,47,210,16,239,229,53,76,159,1,236,99,229,72,84,216],
+  "senderPublicKey": "wyL7JG3mDey2cMCSkzSC3G2Tc7yPDHz87UTGzJV8bbd",
+  "recipientPublicKey": "BMntwkUHDo5bHrVffV1NVLdZpGpm8nYguHfBcgpy558T",
+  "amount": 3,
   "asset": "SOL"
 }
 
@@ -59,4 +59,4 @@ Content-Type: application/json
 GET http://localhost:3000/solana/transaction-history/2ED6LdWKr2TftXo6DVniNAaRrS7uRRUfX7mmtphw67fK
 
 ### Vérifier le solde
-GET http://localhost:3000/solana/get-wallet-balance/DX8bDGB8vY1Cd3CZH2uL4fpvfcXzYaWZECk6E8oQggnk
+GET http://localhost:3000/solana/get-wallet-balance/2ED6LdWKr2TftXo6DVniNAaRrS7uRRUfX7mmtphw67fK
