@@ -35,7 +35,7 @@ Content-Type: application/json
 }
 
 ### Recherche SIREN
-POST http://localhost:3000/validate-business-info
+POST http://localhost:3000/pro/validate-business-info
 Content-Type: application/json
 
 {
