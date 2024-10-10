@@ -15,6 +15,8 @@ exports.validateBusinessInfo = async (req, res) => {
       message: "Business information retrieved successfully.",
       data: businessInfo,
     });
+
+    console.log("___________ pro controller, business info : " + businessInfo);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

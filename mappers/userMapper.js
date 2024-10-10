@@ -36,9 +36,9 @@ class UserMapper {
   async insertBusinessInfo(userId, businessInfo) {
     const {
       siren,
-      categorie_juridique,
-      activite_principale,
       denomination,
+      activite_principale,
+      categorie_juridique,
       date_creation,
     } = businessInfo;
     await pool.query(
