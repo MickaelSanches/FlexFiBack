@@ -1,5 +1,6 @@
 const userService = require("../services/userService");
 const solanaService = require("../services/solanaService");
+const { getBusinessInfo } = require("../services/externalApiService");
 
 exports.register = async (req, res) => {
   const { email, password } = req.body;
@@ -20,25 +21,21 @@ exports.register = async (req, res) => {
 };
 
 exports.registerProfessional = async (req, res) => {
-  const {
-    email,
-    password,
-    siren,
-    mainActivity,
-    companyName,
-    creationDate,
-    legalCategory,
-  } = req.body;
-
-  const businessInfo = {
-    siren: siren,
-    categorie_juridique: legalCategory,
-    activite_principale: mainActivity,
-    denomination: companyName,
-    date_creation: creationDate,
-  };
+  const { email, password, siren } = req.body;
+  let businessInfo;
 
   try {
+    // Récupérer les informations de l'entreprise à partir du SIREN
+    businessInfo = await getBusinessInfo(siren);
+  } catch (error) {
+    console.error("Error fetching business info:", error.message);
+    return res
+      .status(400)
+      .json({ error: "Unable to retrieve business information." });
+  }
+
+  try {
+    // Enregistrer l'utilisateur professionnel avec les informations de l'entreprise
     const user = await userService.registerProfessional(
       email,
       password,

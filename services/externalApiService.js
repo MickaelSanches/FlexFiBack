@@ -2,9 +2,14 @@ const axios = require("axios");
 const querystring = require("querystring");
 
 const getBusinessInfo = async (sirenOrSiret) => {
-  const url = "https://api.insee.fr/entreprises/sirene/V3.11/siren";
+  // Vérifier si l'entrée est un SIREN (9 chiffres) ou un SIRET (14 chiffres)
+  const isSiret = sirenOrSiret.length === 14;
+  const url = isSiret
+    ? "https://api.insee.fr/entreprises/sirene/V3.11/siret"
+    : "https://api.insee.fr/entreprises/sirene/V3.11/siren";
+
   const params = {
-    q: `siren:${sirenOrSiret}`,
+    q: `${isSiret ? "siret" : "siren"}:${sirenOrSiret}`,
     nombre: 1,
     champs:
       "siren,categorieJuridiqueUniteLegale,activitePrincipaleUniteLegale,denominationUniteLegale,dateCreationUniteLegale",
@@ -18,7 +23,14 @@ const getBusinessInfo = async (sirenOrSiret) => {
       },
     });
 
-    // Filtrage des données pertinentes
+    // Vérifier si les données sont disponibles
+    if (
+      !response.data.unitesLegales ||
+      response.data.unitesLegales.length === 0
+    ) {
+      throw new Error("Aucune information d'entreprise trouvée.");
+    }
+
     const uniteLegale = response.data.unitesLegales[0];
     const periodeActive = uniteLegale.periodesUniteLegale.find(
       (periode) => !periode.dateFin
@@ -26,11 +38,15 @@ const getBusinessInfo = async (sirenOrSiret) => {
 
     const businessInfo = {
       siren: uniteLegale.siren,
-      denomination: periodeActive.denominationUniteLegale,
-      activitePrincipale: periodeActive.activitePrincipaleUniteLegale,
-      categorieJuridique: uniteLegale.categorieJuridiqueUniteLegale,
-      dateCreation: uniteLegale.dateCreationUniteLegale,
+      denomination: periodeActive?.denominationUniteLegale || "Non disponible",
+      activite_principale:
+        periodeActive?.activitePrincipaleUniteLegale || "Non disponible",
+      categorie_juridique:
+        uniteLegale.categorieJuridiqueUniteLegale || "Non disponible",
+      date_creation: uniteLegale.dateCreationUniteLegale || "Non disponible",
     };
+
+    console.log("___________ pro eternal API, business info : ", businessInfo);
 
     return businessInfo;
   } catch (error) {
