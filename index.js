@@ -32,7 +32,7 @@ console.log("Database Name:", process.env.DB_NAME);
 console.log("Database Name:", process.env.DB_PASS);
 console.log("Database Name:", process.env.DB_USER);
 
-app.use(cors({ origin: "http://localhost:3001" }));
+app.use(cors({ origin: "https://flexfiback.onrender.com/" }));
 
 // Routes pour l'authentification
 app.use("/auth", authRoutes);
