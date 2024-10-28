@@ -75,6 +75,9 @@ class UserService {
         user: process.env.EMAIL_USER,
         pass: "RafaAdao09072021.",
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
 
     await transporter.sendMail({
