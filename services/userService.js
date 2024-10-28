@@ -70,7 +70,7 @@ class UserService {
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST || "smtp.zoho.eu",
       port: process.env.EMAIL_PORT || 587,
-      secure: false,
+      secure: process.env.EMAIL_SECURE === 'true'
       auth: {
         user: process.env.EMAIL_USER,
         pass: String(process.env.EMAIL_PASS),
