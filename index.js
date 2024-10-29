@@ -20,7 +20,7 @@ const pool = new Pool({
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
-  port: process.env.DB_PORT,
+  port: process.env.DB_PORT || 5000,
 });
 
 pool
@@ -32,7 +32,7 @@ console.log("Database Name:", process.env.DB_NAME);
 console.log("Database Name:", process.env.DB_PASS);
 console.log("Database Name:", process.env.DB_USER);
 
-app.use(cors({ origin: "http://localhost:3000" || "https://www.flex-fi.io" }));
+app.use(cors({ origin: "http://localhost:3001" || "https://www.flex-fi.io" }));
 
 // Routes pour l'authentification
 app.use("/auth", authRoutes);
