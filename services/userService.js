@@ -26,7 +26,9 @@ class UserService {
   }
 
   validatePassword(password) {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,128}$/;
+    const passwordRegex =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{12,}$/;
+
     return passwordRegex.test(password);
   }
 
@@ -101,7 +103,7 @@ class UserService {
 
     if (!this.validatePassword(password)) {
       throw new Error(
-        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+        "Password must be at least 12 characters long and include at least one uppercase letter, one digit, and one special character."
       );
     }
 
@@ -129,7 +131,7 @@ class UserService {
 
     if (!this.validatePassword(password)) {
       throw new Error(
-        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+        "Password must be at least 12 characters long and include at least one uppercase letter, one digit, and one special character."
       );
     }
 
@@ -216,7 +218,7 @@ class UserService {
 
     if (!this.validatePassword(password)) {
       const error = new Error(
-        "Password must be between 8 and 128 characters long, and include at least one digit and one uppercase letter."
+        "Password must be at least 12 characters long and include at least one uppercase letter, one digit, and one special character."
       );
       error.statusCode = 400;
       throw error;
