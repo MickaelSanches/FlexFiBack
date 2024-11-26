@@ -23,8 +23,8 @@ POST http://localhost:3000/bnpl/payment
 Content-Type: application/json
 
 {
-    "buyerPrivateKey": [36,226,94,154,121,12,39,121,167,228,164,172,179,96,137,174,252,219,217,32,226,20,199,213,38,93,15,7,139,8,243,124,120,202,15,217,124,39,253,216,176,121,67,22,223,63,109,87,173,5,184,117,111,238,218,148,125,181,232,65,51,153,150,72],
-    "saleId": 4
+    "buyerPrivateKey": [223,42,93,97,28,175,21,213,3,132,184,105,3,222,53,252,242,76,24,203,233,38,44,255,252,64,7,236,134,72,79,124,71,133,143,173,124,208,71,66,230,171,150,34,230,202,214,38,60,11,37,131,42,101,175,64,1,248,252,31,74,211,71,97],
+    "saleId": 52
 }
 
 
@@ -32,7 +32,7 @@ Content-Type: application/json
 GET http://localhost:3000/bnpl/sale/1
 
 ### Récupérer les ventes
-GET http://localhost:3000/bnpl/user/AHZkSkrdhqF88FjH9Jt8JDmi4g3pJ3MJfGUJDpYQfde2/sales
+GET http://localhost:3000/bnpl/user/DVPkw98MCX9yCBQh88wbJ8jd3LjVabo68o7g4sFYaW3S/sales
 
 ### Télécharger l'échéancier en pdf
 GET http://localhost:3000/bnpl/sale/9/schedule/merchant/pdf

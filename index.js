@@ -2,51 +2,69 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 const dotenv = require("dotenv");
-// const router = require("./router/router");
-const authRoutes = require("./router/authRoutes");
-const proRoutes = require("./router/proRoutes");
-const solanaRoutes = require("./router/solanaRoutes");
-const bnplRoutes = require("./router/bnplRoutes");
-const kycRoutes = require("./router/kycRoutes");
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
+// Détecter l'environnement (production ou développement)
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 // Connexion à PostgreSQL
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: "LesYeuxVerslAvenir",
-  port: process.env.DB_PORT || 5000,
+  user: isDevelopment ? process.env.DB_USER_DEV : process.env.DB_USER,
+  host: isDevelopment ? process.env.DB_HOST_DEV : process.env.DB_HOST,
+  database: isDevelopment ? process.env.DB_NAME_DEV : process.env.DB_NAME,
+  password: isDevelopment ? process.env.DB_PASS_DEV : process.env.DB_PASS,
+  port: isDevelopment ? process.env.DB_PORT_DEV : process.env.DB_PORT || 5000,
 });
 
 pool
   .connect()
-  .then(() => console.log("Connected to PostgreSQL"))
-  .catch((err) => console.log(err));
+  .then(() => {
+    console.log(
+      `Connected to PostgreSQL (${
+        isDevelopment ? "Development" : "Production"
+      })`
+    );
+  })
+  .catch((err) => console.error("Database connection error:", err));
 
-console.log("Database Name:", process.env.DB_NAME);
-console.log("Database Name:", process.env.DB_PASS);
-console.log("Database Name:", process.env.DB_USER);
+// Configuration CORS
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "http://localhost:3000", // Frontend local
+        "http://localhost:3002", // Port alternatif pour le frontend local
+        "https://www.flex-fi.io", // Frontend en production
+      ];
 
-app.use(cors({ origin: "https://www.flex-fi.io" }));
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true); // Autorise l'origine
+      } else {
+        callback(new Error("Not allowed by CORS")); // Bloque l'origine
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"], // Méthodes autorisées
+    credentials: true, // Autorise l'envoi de cookies et headers avec authentification
+  })
+);
 
-// Routes pour l'authentification
+app.options("*", cors()); // Répond aux requêtes OPTIONS
+
+// Routes
+const authRoutes = require("./router/authRoutes");
+const proRoutes = require("./router/proRoutes");
+const solanaRoutes = require("./router/solanaRoutes");
+const bnplRoutes = require("./router/bnplRoutes");
+const kycRoutes = require("./router/kycRoutes");
+
 app.use("/auth", authRoutes);
-
-// Routes pour les informations professionnelles
 app.use("/pro", proRoutes);
-
-// Routes pour les transactions Solana
 app.use("/solana", solanaRoutes);
-
-// Route pour la simulation BNPL
 app.use("/bnpl", bnplRoutes);
-
-// Routes pour le KYC
 app.use("/kyc", kycRoutes);
 
 app.set("view engine", "ejs");
