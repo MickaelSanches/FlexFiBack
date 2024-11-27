@@ -1,3 +1,17 @@
 ### Créer le wallet FlexFi
 POST http://localhost:3000/solana/create-flexfi-wallet
 Content-Type: application/json
+
+### 
+POST https://dvixsfbdoxeacqdvwfzx.supabase.co/rest/v1/flexfi
+Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aXhzZmJkb3hlYWNxZHZ3Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzAxMzE4ODksImV4cCI6MjA0NTcwNzg4OX0.bHT2bk1EkxwmYQ_yWSvjHN2Ai2JPV1ZpSns6mX2eUUw"
+
+Content-Type: application/json
+Prefer: return=representation
+
+{
+  "wallet_address": "3K6hyP9JfhG3BwWwrKUE2dPTuX6o1UvnDS",
+  "created_at": "2024-11-26T18:28:09.814Z",
+  "balance": 10.00,
+  "status": "active"
+}
