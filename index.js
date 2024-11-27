@@ -9,27 +9,40 @@ const app = express();
 app.use(express.json());
 
 // Détecter l'environnement (production ou développement)
-const isDevelopment = process.env.NODE_ENV !== "production";
+// const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Connexion à PostgreSQL
+// const pool = new Pool({
+//   user: isDevelopment ? process.env.DB_USER_DEV : process.env.DB_USER,
+//   host: isDevelopment ? process.env.DB_HOST_DEV : process.env.DB_HOST,
+//   database: isDevelopment ? process.env.DB_NAME_DEV : process.env.DB_NAME,
+//   password: isDevelopment ? process.env.DB_PASS_DEV : "LesYeuxVerslAvenir",
+//   port: isDevelopment ? process.env.DB_PORT_DEV : process.env.DB_PORT || 5000,
+// });
+
 const pool = new Pool({
-  user: isDevelopment ? process.env.DB_USER_DEV : process.env.DB_USER,
-  host: isDevelopment ? process.env.DB_HOST_DEV : process.env.DB_HOST,
-  database: isDevelopment ? process.env.DB_NAME_DEV : process.env.DB_NAME,
-  password: isDevelopment ? process.env.DB_PASS_DEV : "LesYeuxVerslAvenir",
-  port: isDevelopment ? process.env.DB_PORT_DEV : process.env.DB_PORT || 5000,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: "LesYeuxVerslAvenir",
+  port: process.env.DB_PORT || 5000,
 });
+
+// pool
+//   .connect()
+//   .then(() => {
+//     console.log(
+//       `Connected to PostgreSQL (${
+//         isDevelopment ? "Development" : "Production"
+//       })`
+//     );
+//   })
+//   .catch((err) => console.error("Database connection error:", err));
 
 pool
   .connect()
-  .then(() => {
-    console.log(
-      `Connected to PostgreSQL (${
-        isDevelopment ? "Development" : "Production"
-      })`
-    );
-  })
-  .catch((err) => console.error("Database connection error:", err));
+  .then(() => console.log("Connected to PostgreSQL"))
+  .catch((err) => console.log(err));
 
 // Configuration CORS
 app.use(
