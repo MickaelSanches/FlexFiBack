@@ -16,7 +16,9 @@ const pool = new Pool({
   user: isDevelopment ? process.env.DB_USER_DEV : process.env.DB_USER,
   host: isDevelopment ? process.env.DB_HOST_DEV : process.env.DB_HOST,
   database: isDevelopment ? process.env.DB_NAME_DEV : process.env.DB_NAME,
-  password: isDevelopment ? process.env.DB_PASS_DEV : process.env.DB_PASS,
+  password: isDevelopment
+    ? String(process.env.DB_PASS_DEV)
+    : String(process.env.DB_PASS),
   port: isDevelopment ? process.env.DB_PORT_DEV : process.env.DB_PORT || 5000,
 });
 
